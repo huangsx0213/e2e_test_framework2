@@ -1,4 +1,4 @@
-package com.example.api.exception;
+package api.exception;
 
 public class ApiTestException extends RuntimeException {
     public ApiTestException(String message) {

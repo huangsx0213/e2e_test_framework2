@@ -1,4 +1,4 @@
-package com.example.api.config;
+package api.config;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -14,8 +14,8 @@ public class ConfigManager {
 
     static {
         loadConfig();
-        setEnvironment("dev");
-        setProject("default");
+//        setEnvironment("dev");
+//        setProject("default");
     }
 
     private static void loadConfig() {

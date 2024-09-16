@@ -1,6 +1,6 @@
-package com.example.api.request;
+package api.request;
 
-import com.example.api.config.ConfigManager;
+import api.config.ConfigManager;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
 

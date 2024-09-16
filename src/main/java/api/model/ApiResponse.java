@@ -1,4 +1,4 @@
-package com.example.api.model;
+package api.model;
 
 import io.restassured.response.Response;
 

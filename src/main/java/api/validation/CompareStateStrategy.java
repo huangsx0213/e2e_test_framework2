@@ -1,4 +1,4 @@
-package com.example.api.validation;
+package api.validation;
 
 import java.util.Map;
 

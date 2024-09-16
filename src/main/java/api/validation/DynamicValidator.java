@@ -1,7 +1,7 @@
-package com.example.api.validation;
+package api.validation;
 
-import com.example.api.request.HttpRequestBuilder;
-import com.example.api.model.ApiResponse;
+import api.request.HttpRequestBuilder;
+import api.model.ApiResponse;
 import io.restassured.response.Response;
 import java.util.Map;
 

@@ -1,6 +1,6 @@
-package com.example.api.stepdefinitions;
+package api.stepdefinitions;
 
-import com.example.api.steps.UserApiSteps;
+import api.steps.UserApiSteps;
 import io.cucumber.java.en.*;
 import net.serenitybdd.annotations.Steps;
 
@@ -50,14 +50,16 @@ public class ApiStepDefinitions {
     public void iSendTheRequest() {
         apiSteps.sendRequest();
     }
-
-    @Then("the response status code should be {int}")
+    @Then("The response status code should be {int}")
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) {
         apiSteps.verifyResponseStatusCode(expectedStatusCode);
     }
+
 
     @And("the response should contain:")
     public void theResponseShouldContain(Map<String, String> expectedData) {
         apiSteps.verifyResponseContent(expectedData);
     }
+
+
 }

@@ -1,4 +1,4 @@
-package com.example.api.context;
+package api.context;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,6 +1,6 @@
-package com.example.api.hooks;
+package api.hooks;
 
-import com.example.api.context.TestContext;
+import api.context.TestContext;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 

@@ -1,4 +1,4 @@
-package com.example.api.validation;
+package api.validation;
 
 public interface ValidationStrategy {
     void execute(Object... args);

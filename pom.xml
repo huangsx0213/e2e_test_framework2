@@ -39,11 +39,16 @@
             <version>${serenity.version}</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
         <!-- JUnit dependencies -->
         <dependency>
             <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
+            <artifactId>junit-platform-suite</artifactId>
             <version>1.8.2</version>
             <scope>test</scope>
         </dependency>

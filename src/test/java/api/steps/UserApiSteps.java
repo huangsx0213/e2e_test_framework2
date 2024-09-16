@@ -1,13 +1,13 @@
-package com.example.api.steps;
+package api.steps;
 
-import com.example.api.config.ConfigManager;
-import com.example.api.context.TestContext;
-import com.example.api.model.ApiResponse;
-import com.example.api.request.HttpRequestBuilder;
-import com.example.api.template.TemplateProcessor;
-import com.example.api.validation.CompareStateStrategy;
-import com.example.api.validation.DynamicValidator;
-import com.example.api.validation.FetchReferenceStateStrategy;
+import api.config.ConfigManager;
+import api.context.TestContext;
+import api.model.ApiResponse;
+import api.request.HttpRequestBuilder;
+import api.template.TemplateProcessor;
+import api.validation.CompareStateStrategy;
+import api.validation.DynamicValidator;
+import api.validation.FetchReferenceStateStrategy;
 import net.serenitybdd.annotations.Step;
 import io.restassured.path.json.JsonPath;
 
@@ -66,8 +66,7 @@ public class UserApiSteps {
 
     @Step("Send the API request")
     public void sendRequest() {
-        apiResponse = new ApiResponse(requestBuilder.build()
-                .request(requestBuilder.getMethod(), requestBuilder.getEndpoint()));
+        apiResponse = new ApiResponse(requestBuilder.build().request(requestBuilder.getMethod(), requestBuilder.getEndpoint()));
     }
 
     @Step("Verify response status code is {0}")

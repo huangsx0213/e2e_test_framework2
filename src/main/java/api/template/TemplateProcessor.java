@@ -1,6 +1,6 @@
-package com.example.api.template;
+package api.template;
 
-import com.example.api.config.ConfigManager;
+import api.config.ConfigManager;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;

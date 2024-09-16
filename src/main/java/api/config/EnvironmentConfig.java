@@ -1,4 +1,4 @@
-package com.example.api.config;
+package api.config;
 
 import java.io.InputStream;
 import java.util.Properties;
