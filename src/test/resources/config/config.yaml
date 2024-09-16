@@ -1,0 +1,39 @@
+environments:
+  dev:
+    api:
+      base_url: "https://dev-api.example.com"
+      endpoints:
+        create_user: "/users"
+        get_user: "/users/{id}"
+        user_count: "/users/count"
+    # Other dev-specific configurations
+
+  sit:
+    api:
+      base_url: "https://sit-api.example.com"
+      endpoints:
+        create_user: "/users"
+        get_user: "/users/{id}"
+        user_count: "/users/count"
+    # Other sit-specific configurations
+
+  api:
+    base_url: "https://uat-api.example.com"
+    endpoints:
+      create_user: "/users"
+      get_user: "/users/{id}"
+      user_count: "/users/count"
+    # Other uat-specific configurations
+
+projects:
+  project1:
+    body_templates:
+      create_user: "project1/create_user_body.ftl"
+    header_templates:
+      common: "project1/common_headers.ftl"
+
+  project2:
+    body_templates:
+      create_user: "project2/create.ftl"
+    header_templates:
+      common: "project2/common_headers.ftl"
