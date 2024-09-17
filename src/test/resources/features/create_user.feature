@@ -1,5 +1,5 @@
 Feature: Create User
-
+@create_user
   Scenario: Create a new user and store the user ID
     Given I am using the "dev" environment
     And I am working on the "project1" project

@@ -2,9 +2,9 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-public class FileExporter {
+public class ExportingForAI {
     // 设置输出文件名
-    private static final String OUTPUT_FILE = "output.txt";
+    private static final String OUTPUT_FILE = "target/output.txt";
 
     // 设置要导出的根目录
     private static final String ROOT_DIRECTORY = ".";
@@ -26,11 +26,11 @@ public class FileExporter {
 
     // 设置要包含的文件后缀
     private static final Set<String> INCLUDED_EXTENSIONS = new HashSet<>(Arrays.asList(
-            "java", "json", "xml", "yaml", "properties", "feature", "ftl"
+            "java", "json", "xml", "yaml", "properties", "feature", "ftl","conf"
     ));
 
     public static void main(String[] args) {
-        FileExporter exporter = new FileExporter();
+        ExportingForAI exporter = new ExportingForAI();
         exporter.export();
     }
 
