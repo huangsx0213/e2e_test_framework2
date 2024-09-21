@@ -1,33 +1,70 @@
 package api.validation;
 
+import api.model.ApiResponse;
+import api.exception.ApiTestException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 
 public class CompareStateStrategy implements ValidationStrategy {
-    @Override
-    public void execute(Object... args) {
-        Map<String, Object> initialState = (Map<String, Object>) args[0];
-        Map<String, Object> finalState = (Map<String, Object>) args[1];
-        Map<String, String> expectedChanges = (Map<String, String>) args[2];
+    private static final Logger logger = LoggerFactory.getLogger(CompareStateStrategy.class);
 
+    private final Map<String, Object> initialState;
+    private final Map<String, String> expectedChanges;
+
+    public CompareStateStrategy(Map<String, Object> initialState, Map<String, String> expectedChanges) {
+        this.initialState = initialState;
+        this.expectedChanges = expectedChanges;
+    }
+
+    @Override
+    public void validate(ApiResponse response) throws ApiTestException.ResponseValidationException {
+        logger.info("Starting state comparison validation");
         for (Map.Entry<String, String> entry : expectedChanges.entrySet()) {
             String field = entry.getKey();
             String expectedChange = entry.getValue();
 
             Object initialValue = initialState.get(field);
-            Object finalValue = finalState.get(field);
+            Object finalValue = response.jsonPath().get(field);
+
+            logger.debug("Validating field: {}. Initial value: {}, Final value: {}, Expected change: {}",
+                    field, initialValue, finalValue, expectedChange);
 
             if (expectedChange.startsWith("+")) {
-                int change = Integer.parseInt(expectedChange.substring(1));
-                assert (Integer) finalValue == (Integer) initialValue + change :
-                        "Expected " + field + " to increase by " + change;
+                validateIncrease(field, initialValue, finalValue, expectedChange);
             } else if (expectedChange.startsWith("-")) {
-                int change = Integer.parseInt(expectedChange.substring(1));
-                assert (Integer) finalValue == (Integer) initialValue - change :
-                        "Expected " + field + " to decrease by " + change;
+                validateDecrease(field, initialValue, finalValue, expectedChange);
             } else {
-                assert finalValue.equals(expectedChange) :
-                        "Expected " + field + " to be " + expectedChange;
+                validateExactMatch(field, finalValue, expectedChange);
             }
+        }
+        logger.info("State comparison validation completed successfully");
+    }
+
+    private void validateIncrease(String field, Object initialValue, Object finalValue, String expectedChange) {
+        int change = Integer.parseInt(expectedChange.substring(1));
+        if (!((Integer) finalValue).equals(((Integer) initialValue) + change)) {
+            throw new ApiTestException.ResponseValidationException(
+                    String.format("Expected %s to increase by %d, but it changed from %s to %s",
+                            field, change, initialValue, finalValue));
+        }
+    }
+
+    private void validateDecrease(String field, Object initialValue, Object finalValue, String expectedChange) {
+        int change = Integer.parseInt(expectedChange.substring(1));
+        if (!((Integer) finalValue).equals(((Integer) initialValue) - change)) {
+            throw new ApiTestException.ResponseValidationException(
+                    String.format("Expected %s to decrease by %d, but it changed from %s to %s",
+                            field, change, initialValue, finalValue));
+        }
+    }
+
+    private void validateExactMatch(String field, Object finalValue, String expectedChange) {
+        if (!finalValue.toString().equals(expectedChange)) {
+            throw new ApiTestException.ResponseValidationException(
+                    String.format("Expected %s to be %s, but it was %s",
+                            field, expectedChange, finalValue));
         }
     }
 }

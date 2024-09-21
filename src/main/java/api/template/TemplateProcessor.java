@@ -15,7 +15,7 @@ public class TemplateProcessor {
 
     static {
         configuration = new Configuration(Configuration.VERSION_2_3_31);
-        configuration.setClassForTemplateLoading(TemplateProcessor.class,"/templates");
+        configuration.setClassForTemplateLoading(TemplateProcessor.class,"/templates/"+ConfigManager.getInstance().getCurrentProject());
     }
 
     public static String processTemplate(String templateName, Map<String, String> data) throws IOException, TemplateException {
@@ -23,9 +23,6 @@ public class TemplateProcessor {
         StringWriter writer = new StringWriter();
 
         Map<String, Object> templateData = new HashMap<>(data);
-        templateData.put("env", ConfigManager.getCurrentEnvironment());
-        templateData.put("project", ConfigManager.getCurrentProject());
-        templateData.put("baseUrl", ConfigManager.getBaseUrl());
 
         template.process(templateData, writer);
         return writer.toString();

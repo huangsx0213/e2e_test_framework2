@@ -1,88 +1,88 @@
 package api.config;
 
 import org.yaml.snakeyaml.Yaml;
-
 import java.io.InputStream;
 import java.util.Map;
 
-
 public class ConfigManager {
-    private static final String CONFIG_FILE = "/config/config.yaml";
-    private static Map<String, Object> config;
-    private static String currentEnvironment;
-    private static String currentProject;
+    private static final String API_ENDPOINT_CONFIG_FILE = "/config/api-endpoint-config.yaml";
+    private static final String PROJECT_TEMPLATE_CONFIG_FILE = "/config/project-template-config.yaml";
+    private static volatile ConfigManager instance;
+    private Map<String, Object> apiEndpointConfig;
+    private Map<String, Object> projectTemplateConfig;
+    private String currentEnvironment;
+    private String currentProject;
 
-    static {
-        loadConfig();
-//        setEnvironment("dev");
-//        setProject("default");
+    private ConfigManager() {
+        loadConfigs();
     }
 
-    private static void loadConfig() {
-        try (InputStream inputStream = ConfigManager.class.getResourceAsStream(CONFIG_FILE)) {
+    public static ConfigManager getInstance() {
+        if (instance == null) {
+            synchronized (ConfigManager.class) {
+                if (instance == null) {
+                    instance = new ConfigManager();
+                }
+            }
+        }
+        return instance;
+    }
+
+    private void loadConfigs() {
+        try (InputStream apiInputStream = getClass().getResourceAsStream(API_ENDPOINT_CONFIG_FILE);
+             InputStream projInputStream = getClass().getResourceAsStream(PROJECT_TEMPLATE_CONFIG_FILE)) {
             Yaml yaml = new Yaml();
-            config = yaml.load(inputStream);
+            apiEndpointConfig = yaml.load(apiInputStream);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to load configuration", e);
+            throw new RuntimeException("Failed to load configurations", e);
         }
     }
 
-    public static void setEnvironment(String environment) {
-        if (!getEnvironments().containsKey(environment)) {
+    public void setEnvironment(String environment) {
+        if (!apiEndpointConfig.containsKey(environment)) {
             throw new IllegalArgumentException("Invalid environment: " + environment);
         }
         currentEnvironment = environment;
     }
 
-    public static void setProject(String project) {
-        if (!getProjects().containsKey(project)) {
-            throw new IllegalArgumentException("Invalid project: " + project);
-        }
+    public void setProject(String project) {
         currentProject = project;
     }
 
-    public static String getCurrentEnvironment() {
+    public String getEndpointUrl(String key) {
+        checkEnvironmentSet();
+        Map<String, Object> env = (Map<String, Object>) apiEndpointConfig.get(currentEnvironment);
+        Map<String, Object> endpoints = (Map<String, Object>) env.get("endpoints");
+        Map<String, Object> endpoint = (Map<String, Object>) endpoints.get(key);
+        return (String) endpoint.get("url");
+    }
+
+    public String getEndpointMethod(String key) {
+        checkEnvironmentSet();
+        Map<String, Object> env = (Map<String, Object>) apiEndpointConfig.get(currentEnvironment);
+        Map<String, Object> endpoints = (Map<String, Object>) env.get("endpoints");
+        Map<String, Object> endpoint = (Map<String, Object>) endpoints.get(key);
+        return (String) endpoint.get("method");
+    }
+
+
+    public String getCurrentEnvironment() {
         return currentEnvironment;
     }
 
-    public static String getCurrentProject() {
+    public String getCurrentProject() {
         return currentProject;
     }
 
-    public static Map<String, Object> getEnvironments() {
-        return (Map<String, Object>) config.get("environments");
+    private void checkEnvironmentSet() {
+        if (currentEnvironment == null) {
+            throw new IllegalStateException("Environment not set. Call setEnvironment() before accessing endpoint configurations.");
+        }
     }
 
-    public static Map<String, Object> getProjects() {
-        return (Map<String, Object>) config.get("projects");
-    }
-
-    public static String getEndpoint(String key) {
-        Map<String, Object> env = (Map<String, Object>) getEnvironments().get(currentEnvironment);
-        Map<String, Object> api = (Map<String, Object>) env.get("api");
-        Map<String, Object> endpoints = (Map<String, Object>) api.get("endpoints");
-        return (String) endpoints.get(key);
-    }
-    public static String getBaseUrl() {
-        Map<String, Object> env = (Map<String, Object>) getEnvironments().get(currentEnvironment);
-        Map<String, Object> api = (Map<String, Object>) env.get("api");
-        return (String) api.get("base_url");
-    }
-
-    public static String getBodyTemplate(String key) {
-        Map<String, Object> project = (Map<String, Object>) getProjects().get(currentProject);
-        Map<String, Object> templates = (Map<String, Object>) project.get("body_templates");
-        return (String) templates.get(key);
-    }
-
-    public static String getHeaderTemplate(String key) {
-        Map<String, Object> project = (Map<String, Object>) getProjects().get(currentProject);
-        Map<String, Object> templates = (Map<String, Object>) project.get("header_templates");
-        return (String) templates.get(key);
-    }
-
-    public static Object getConfigValue(String key) {
-        Map<String, Object> env = (Map<String, Object>) getEnvironments().get(currentEnvironment);
-        return env.get(key);
+    private void checkProjectSet() {
+        if (currentProject == null) {
+            throw new IllegalStateException("Project not set. Call setProject() before accessing template configurations.");
+        }
     }
 }
