@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class ApiResponse {
     private static final Logger logger = LoggerFactory.getLogger(ApiResponse.class);
@@ -25,8 +26,14 @@ public class ApiResponse {
         return response.getBody().asString();
     }
 
-    public <T> T getBody(Class<T> clazz) {
-        return response.getBody().as(clazz);
+    public <T> Optional<T> getBodyAs(Class<T> clazz) {
+        try {
+            T body = response.getBody().as(clazz);
+            return Optional.ofNullable(body);
+        } catch (Exception e) {
+            logger.error("Failed to parse response body as {}", clazz.getSimpleName(), e);
+            return Optional.empty();
+        }
     }
 
     public JsonPath jsonPath() {
@@ -36,8 +43,8 @@ public class ApiResponse {
         return jsonPath;
     }
 
-    public String getHeader(String headerName) {
-        return response.getHeader(headerName);
+    public Optional<String> getHeader(String headerName) {
+        return Optional.ofNullable(response.getHeader(headerName));
     }
 
     public Map<String, String> getHeaders() {
@@ -53,14 +60,32 @@ public class ApiResponse {
         return response.getTime();
     }
 
-    public String getContentType() {
-        return response.getContentType();
+    public Optional<String> getContentType() {
+        return Optional.ofNullable(response.getContentType());
+    }
+
+    public <T> Optional<T> extractValue(String jsonPath, Class<T> clazz) {
+        try {
+            T value = this.jsonPath().getObject(jsonPath, clazz);
+            return Optional.ofNullable(value);
+        } catch (Exception e) {
+            logger.error("Failed to extract value for path: {} as {}", jsonPath, clazz.getSimpleName(), e);
+            return Optional.empty();
+        }
+    }
+
+    public boolean hasJsonPath(String path) {
+        return jsonPath().get(path) != null;
     }
 
     public void logResponse() {
         logger.info("Response Status Code: {}", getStatusCode());
-        logger.info("Response Headers: {}", getHeaders());
-        logger.info("Response Body: {}", getBodyAsString());
+        logger.info("Response Headers:\n{}", getHeaders());
+        logger.info("Response Body:\n{}", getBodyAsString());
         logger.info("Response Time: {} ms", getResponseTime());
+    }
+
+    public Response getOriginalResponse() {
+        return response;
     }
 }

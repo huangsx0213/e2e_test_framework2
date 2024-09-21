@@ -39,12 +39,16 @@ public class ExcelDataReader {
                 Row row = sheet.getRow(i);
                 if (row != null) {
                     TestCase testCase = createTestCase(row, headerMap);
-                    testCases.add(testCase);
+                    if (testCase.isValid()) {
+                        testCases.add(testCase);
+                    } else {
+                        logger.warn("Invalid test case at row {}: {}", i + 1, testCase);
+                    }
                 }
             }
 
             cache.put(sheetName, testCases);
-            logger.info("Loaded {} test cases from sheet: {}", testCases.size(), sheetName);
+            logger.info("Loaded {} valid test cases from sheet: {}", testCases.size(), sheetName);
 
         } catch (IOException e) {
             logger.error("Failed to read Excel file: {}", EXCEL_FILE_PATH, e);
@@ -69,24 +73,27 @@ public class ExcelDataReader {
         setTestCaseField(testCase, "TCID", getCellValueAsString(row, headerMap.get("TCID")));
         setTestCaseField(testCase, "Name", getCellValueAsString(row, headerMap.get("Name")));
         setTestCaseField(testCase, "Descriptions", getCellValueAsString(row, headerMap.get("Descriptions")));
-        setTestCaseField(testCase, "Conditions", Arrays.asList(getCellValueAsString(row, headerMap.get("Conditions")).split("\n")));
+        setTestCaseField(testCase, "Conditions", parseList(getCellValueAsString(row, headerMap.get("Conditions"))));
         setTestCaseField(testCase, "EndpointKey", getCellValueAsString(row, headerMap.get("Endpoint Key")));
         setTestCaseField(testCase, "HeadersTemplateKey", getCellValueAsString(row, headerMap.get("Headers Template Key")));
-        setTestCaseField(testCase, "HeaderOverride", Arrays.asList(getCellValueAsString(row, headerMap.get("Header Override")).split("\n")));
+        setTestCaseField(testCase, "HeaderOverride", parseList(getCellValueAsString(row, headerMap.get("Header Override"))));
         setTestCaseField(testCase, "BodyTemplateKey", getCellValueAsString(row, headerMap.get("Body Template Key")));
-        setTestCaseField(testCase, "BodyOverride", Arrays.asList(getCellValueAsString(row, headerMap.get("Body Override")).split("\n")));
+        setTestCaseField(testCase, "BodyOverride", parseList(getCellValueAsString(row, headerMap.get("Body Override"))));
         setTestCaseField(testCase, "Run", "Y".equalsIgnoreCase(getCellValueAsString(row, headerMap.get("Run"))));
-        setTestCaseField(testCase, "Tags", Arrays.asList(getCellValueAsString(row, headerMap.get("Tags")).split("\n")));
-        setTestCaseField(testCase, "ExpStatus", Integer.parseInt(getCellValueAsString(row, headerMap.get("Exp Status"))));
-        setTestCaseField(testCase, "ExpResult", Arrays.asList(getCellValueAsString(row, headerMap.get("Exp Result")).split("\n")));
-        setTestCaseField(testCase, "SaveFields", Arrays.asList(getCellValueAsString(row, headerMap.get("Save Fields")).split("\n")));
+        setTestCaseField(testCase, "Tags", parseList(getCellValueAsString(row, headerMap.get("Tags"))));
+        setTestCaseField(testCase, "ExpStatus", parseInteger(getCellValueAsString(row, headerMap.get("Exp Status"))));
+        setTestCaseField(testCase, "ExpResult", parseList(getCellValueAsString(row, headerMap.get("Exp Result"))));
+        setTestCaseField(testCase, "SaveFields", parseList(getCellValueAsString(row, headerMap.get("Save Fields"))));
         setTestCaseField(testCase, "DynamicValidationEndpoint", getCellValueAsString(row, headerMap.get("Dynamic Validation Endpoint")));
-        setTestCaseField(testCase, "DynamicValidationExpectedChanges", parseExpectedChanges(getCellValueAsString(row, headerMap.get("Dynamic Validation Expected Changes"))));
+        setTestCaseField(testCase, "DynamicValidationExpectedChanges", parseMap(getCellValueAsString(row, headerMap.get("Dynamic Validation Expected Changes"))));
 
         return testCase;
     }
 
-    private static String getCellValueAsString(Row row, int cellIndex) {
+    private static String getCellValueAsString(Row row, Integer cellIndex) {
+        if (cellIndex == null) {
+            return "";
+        }
         Cell cell = row.getCell(cellIndex);
         if (cell == null) {
             return "";
@@ -106,29 +113,41 @@ public class ExcelDataReader {
     private static void setTestCaseField(TestCase testCase, String fieldName, Object value) {
         try {
             if (value instanceof List) {
-                // 处理 List 类型
                 testCase.getClass().getMethod("set" + fieldName, List.class).invoke(testCase, value);
             } else if (value instanceof Map) {
-                // 处理 Map 类型
                 testCase.getClass().getMethod("set" + fieldName, Map.class).invoke(testCase, value);
             } else if (value instanceof Boolean) {
-                // 处理 boolean 类型，使用 Boolean.TYPE 来指定基本类型
-                testCase.getClass().getMethod("set" + fieldName, Boolean.TYPE).invoke(testCase, value);
+                testCase.getClass().getMethod("set" + fieldName, boolean.class).invoke(testCase, value);
             } else if (value instanceof Integer) {
-                // 处理 boolean 类型，使用 Boolean.TYPE 来指定基本类型
-                testCase.getClass().getMethod("set" + fieldName, Integer.TYPE).invoke(testCase, value);
-            }else {
-                // 处理其他类型
-                testCase.getClass().getMethod("set" + fieldName, value.getClass()).invoke(testCase, value);
+                testCase.getClass().getMethod("set" + fieldName, int.class).invoke(testCase, value);
+            } else {
+                testCase.getClass().getMethod("set" + fieldName, String.class).invoke(testCase, value);
             }
         } catch (Exception e) {
             logger.error("Failed to set field: {} with value: {}", fieldName, value, e);
         }
     }
 
+    private static List<String> parseList(String value) {
+        if (value == null || value.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(value.split("\n"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+    }
 
+    private static int parseInteger(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            logger.warn("Failed to parse integer: {}", value);
+            return 0;
+        }
+    }
 
-    private static Map<String, String> parseExpectedChanges(String value) {
+    private static Map<String, String> parseMap(String value) {
         if (value == null || value.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -137,7 +156,9 @@ public class ExcelDataReader {
                 .filter(keyValue -> keyValue.length == 2)
                 .collect(Collectors.toMap(
                         keyValue -> keyValue[0].trim(),
-                        keyValue -> keyValue[1].trim()
+                        keyValue -> keyValue[1].trim(),
+                        (v1, v2) -> v1,
+                        LinkedHashMap::new
                 ));
     }
 }

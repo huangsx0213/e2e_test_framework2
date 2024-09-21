@@ -69,4 +69,22 @@ public class TestCase {
 
     public Map<String, String> getDynamicValidationExpectedChanges() { return dynamicValidationExpectedChanges; }
     public void setDynamicValidationExpectedChanges(Map<String, String> dynamicValidationExpectedChanges) { this.dynamicValidationExpectedChanges = dynamicValidationExpectedChanges; }
+
+    // Validation method
+    public boolean isValid() {
+        return tcid != null && !tcid.isEmpty() &&
+                name != null && !name.isEmpty() &&
+                endpointKey != null && !endpointKey.isEmpty() &&
+                expStatus > 0;
+    }
+
+    @Override
+    public String toString() {
+        return "TestCase{" +
+                "tcid='" + tcid + '\'' +
+                ", name='" + name + '\'' +
+                ", endpointKey='" + endpointKey + '\'' +
+                ", expStatus=" + expStatus +
+                '}';
+    }
 }

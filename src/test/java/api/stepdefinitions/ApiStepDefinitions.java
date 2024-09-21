@@ -33,90 +33,42 @@ public class ApiStepDefinitions {
                 .filter(tc -> tc.getTCID().equals(tcid))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No test cases found for TCID: " + tcid));
-        logger.info("Test cases loaded for TCID: {}", tcid);
+        logger.info("Test case loaded for TCID: {}", tcid);
     }
 
     @When("I execute the API request")
     public void iExecuteTheAPIRequest() {
-        try {
-            apiSteps.prepareRequest(currentTestCase.getEndpointKey())
-                    .setRequestHeaders(currentTestCase.getHeadersTemplateKey(), parseOverride(currentTestCase.getHeaderOverride()))
-                    .setRequestBody(currentTestCase.getBodyTemplateKey(), parseOverride(currentTestCase.getBodyOverride()));
+        apiSteps.prepareRequest(currentTestCase.getEndpointKey())
+                .setRequestHeaders(currentTestCase.getHeadersTemplateKey(), parseOverride(currentTestCase.getHeaderOverride()))
+                .setRequestBody(currentTestCase.getBodyTemplateKey(), parseOverride(currentTestCase.getBodyOverride()));
 
-            if (currentTestCase.getDynamicValidationEndpoint() != null && !currentTestCase.getDynamicValidationEndpoint().isEmpty()) {
-                DynamicValidator.validate(
-                        currentTestCase.getDynamicValidationEndpoint(),
-                        currentTestCase.getDynamicValidationExpectedChanges(),
-                        apiSteps.getRequestBuilder()
-                );
-                logger.info("Performed dynamic validation for endpoint: {}", currentTestCase.getDynamicValidationEndpoint());
-            } else {
-                apiSteps.sendRequest();
-            }
-
-            logger.info("API request executed for endpoint: {}", currentTestCase.getEndpointKey());
-        } catch (Exception e) {
-            logger.error("Failed to execute API request", e);
-            throw new RuntimeException("Failed to execute API request", e);
+        if (currentTestCase.getDynamicValidationEndpoint() != null && !currentTestCase.getDynamicValidationEndpoint().isEmpty()) {
+            DynamicValidator.validate(
+                    currentTestCase.getDynamicValidationEndpoint(),
+                    currentTestCase.getDynamicValidationExpectedChanges(),
+                    apiSteps.getRequestBuilder()
+            );
+            logger.info("Performed dynamic validation for endpoint: {}", currentTestCase.getDynamicValidationEndpoint());
+        } else {
+            apiSteps.sendRequest();
         }
+
+        logger.info("API request executed for endpoint: {}", currentTestCase.getEndpointKey());
     }
 
     @Then("I verify the API response")
     public void iVerifyTheAPIResponse() {
-        try {
-            apiSteps.verifyResponseStatusCode(currentTestCase.getExpStatus())
-                    .verifyResponseContent(parseExpectedResult(currentTestCase.getExpResult()));
-
-            logger.info("API response verified successfully");
-        } catch (AssertionError e) {
-            logger.error("API response verification failed", e);
-            throw e;
-        }
+        apiSteps.verifyResponseStatusCode(currentTestCase.getExpStatus())
+                .verifyResponseContent(parseExpectedResult(currentTestCase.getExpResult()));
+        logger.info("API response verified successfully");
     }
 
     @And("I store the response value")
     public void iStoreTheResponseValue() {
         if (currentTestCase.getSaveFields() != null && !currentTestCase.getSaveFields().isEmpty()) {
-             apiSteps.storeResponseValue(currentTestCase.getSaveFields());
-
+            apiSteps.storeResponseValue(currentTestCase.getSaveFields());
+            logger.info("Stored response values: {}", currentTestCase.getSaveFields());
         }
-    }
-
-    @Given("I check the conditions for the test case")
-    public void iCheckTheConditionsForTheTestCase() {
-        if (currentTestCase.getConditions() != null && !currentTestCase.getConditions().isEmpty()) {
-            for (String condition : currentTestCase.getConditions()) {
-                // Implement condition checking logic
-                // For example: [TestSetup]PRE, [CheckwithPosition], etc.
-                logger.info("Checking condition: {}", condition);
-            }
-        }
-    }
-
-    private Map<String, String> parseOverride(List<String> override) {
-        Map<String, String> result = new HashMap<>();
-        if (override != null && !override.isEmpty()) {
-            for (String pair : override) {
-                String[] keyValue = pair.split(":");
-                if (keyValue.length == 2) {
-                    result.put(keyValue[0].trim(), keyValue[1].trim());
-                }
-            }
-        }
-        return result;
-    }
-
-    private Map<String, String> parseExpectedResult(List<String> expResult) {
-        Map<String, String> expected = new HashMap<>();
-        if (expResult != null && !expResult.isEmpty()) {
-            for (String pair : expResult) {
-                String[] keyValue = pair.split("=");
-                if (keyValue.length == 2) {
-                    expected.put(keyValue[0].trim(), keyValue[1].trim());
-                }
-            }
-        }
-        return expected;
     }
 
     @Given("I am using the {string} environment")
@@ -131,5 +83,29 @@ public class ApiStepDefinitions {
         logger.info("Working on project: {}", project);
     }
 
+    private Map<String, String> parseOverride(List<String> override) {
+        Map<String, String> result = new HashMap<>();
+        if (override != null) {
+            for (String pair : override) {
+                String[] keyValue = pair.split(":", 2);
+                if (keyValue.length == 2) {
+                    result.put(keyValue[0].trim(), keyValue[1].trim());
+                }
+            }
+        }
+        return result;
+    }
 
+    private Map<String, String> parseExpectedResult(List<String> expResult) {
+        Map<String, String> expected = new HashMap<>();
+        if (expResult != null) {
+            for (String pair : expResult) {
+                String[] keyValue = pair.split("=", 2);
+                if (keyValue.length == 2) {
+                    expected.put(keyValue[0].trim(), keyValue[1].trim());
+                }
+            }
+        }
+        return expected;
+    }
 }
