@@ -7,29 +7,16 @@
     </appender>
 
     <!-- File output appender -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>target/logs/myapp.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- Daily rollover -->
-            <fileNamePattern>logs/myapp-%d{yyyy-MM-dd}.log</fileNamePattern>
-            <!-- Keep 30 days' worth of history -->
-            <maxHistory>30</maxHistory>
-            <!-- Total size cap for log files -->
-            <totalSizeCap>3GB</totalSizeCap>
-        </rollingPolicy>
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>target/logs/e2e.log</file>
+        <append>false</append>
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- Set log levels for specific packages -->
+    <!-- Set log level for your application -->
     <logger name="api" level="DEBUG"/>
-    <logger name="com.yourcompany.yourapp.service" level="INFO"/>
-    <logger name="com.yourcompany.yourapp.dao" level="WARN"/>
-
-    <!-- Log levels for third-party libraries -->
-    <logger name="org.springframework" level="INFO"/>
-    <logger name="org.hibernate" level="WARN"/>
 
     <!-- Root logger -->
     <root level="INFO">

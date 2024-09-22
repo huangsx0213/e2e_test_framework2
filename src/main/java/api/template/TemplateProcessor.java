@@ -1,7 +1,7 @@
 package api.template;
 
 import api.config.ConfigManager;
-import api.exception.ApiTestException;
+import api.exception.TestException;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -19,15 +19,19 @@ public class TemplateProcessor {
 
     static {
         configuration = new Configuration(Configuration.VERSION_2_3_31);
-        configuration.setClassForTemplateLoading(TemplateProcessor.class, "/templates/" + ConfigManager.getInstance().getCurrentProject());
-        logger.info("Template processor initialized for project: {}", ConfigManager.getInstance().getCurrentProject());
+        updateTemplateDirectory();
+    }
+
+    public static void updateTemplateDirectory() {
+        String project = ConfigManager.getInstance().getCurrentProject();
+        configuration.setClassForTemplateLoading(TemplateProcessor.class, "/templates/" + project);
     }
 
     private TemplateProcessor() {
         // Private constructor to prevent instantiation
     }
 
-    public static String renderTemplate(String templateName, Map<String, String> data) throws ApiTestException {
+    public static String renderTemplate(String templateName, Map<String, String> data) throws TestException {
         try (StringWriter writer = new StringWriter()) {
             Template template = configuration.getTemplate(templateName);
             template.process(data, writer);
@@ -36,7 +40,7 @@ public class TemplateProcessor {
             return renderedContent;
         } catch (IOException | TemplateException e) {
             logger.error("Failed to render template: {}", templateName, e);
-            throw new ApiTestException("Template rendering failed", e);
+            throw new TestException("Template rendering failed", e);
         }
     }
 
@@ -63,11 +67,11 @@ public class TemplateProcessor {
             logger.info("Template directory set to: {}", directory);
         } catch (IOException e) {
             logger.error("Failed to set template directory: {}", directory, e);
-            throw new ApiTestException("Failed to set template directory", e);
+            throw new TestException("Failed to set template directory", e);
         }
     }
 
-    public static String combineTemplates(String... templateNames) throws ApiTestException {
+    public static String combineTemplates(String... templateNames) throws TestException {
         StringBuilder combined = new StringBuilder();
         for (String templateName : templateNames) {
             combined.append(renderTemplate(templateName, new HashMap<>())).append("\n");

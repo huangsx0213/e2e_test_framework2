@@ -1,7 +1,7 @@
 package api.validation;
 
-import api.model.ApiResponse;
-import api.exception.ApiTestException;
+import api.model.HttpResponse;
+import api.exception.TestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +19,7 @@ public class CompareStateStrategy implements ValidationStrategy {
     }
 
     @Override
-    public void validate(ApiResponse response) throws ApiTestException.ResponseValidationException {
+    public void validate(HttpResponse response) throws TestException.ResponseValidationException {
         logger.info("Starting state comparison validation");
         for (Map.Entry<String, String> entry : expectedChanges.entrySet()) {
             String field = entry.getKey();
@@ -45,7 +45,7 @@ public class CompareStateStrategy implements ValidationStrategy {
     private void validateIncrease(String field, Object initialValue, Object finalValue, String expectedChange) {
         int change = Integer.parseInt(expectedChange.substring(1));
         if (!((Integer) finalValue).equals(((Integer) initialValue) + change)) {
-            throw new ApiTestException.ResponseValidationException(
+            throw new TestException.ResponseValidationException(
                     String.format("Expected %s to increase by %d, but it changed from %s to %s",
                             field, change, initialValue, finalValue));
         }
@@ -54,7 +54,7 @@ public class CompareStateStrategy implements ValidationStrategy {
     private void validateDecrease(String field, Object initialValue, Object finalValue, String expectedChange) {
         int change = Integer.parseInt(expectedChange.substring(1));
         if (!((Integer) finalValue).equals(((Integer) initialValue) - change)) {
-            throw new ApiTestException.ResponseValidationException(
+            throw new TestException.ResponseValidationException(
                     String.format("Expected %s to decrease by %d, but it changed from %s to %s",
                             field, change, initialValue, finalValue));
         }
@@ -62,7 +62,7 @@ public class CompareStateStrategy implements ValidationStrategy {
 
     private void validateExactMatch(String field, Object finalValue, String expectedChange) {
         if (!finalValue.toString().equals(expectedChange)) {
-            throw new ApiTestException.ResponseValidationException(
+            throw new TestException.ResponseValidationException(
                     String.format("Expected %s to be %s, but it was %s",
                             field, expectedChange, finalValue));
         }

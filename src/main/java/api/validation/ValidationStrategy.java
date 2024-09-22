@@ -1,8 +1,8 @@
 package api.validation;
 
-import api.model.ApiResponse;
-import api.exception.ApiTestException;
+import api.model.HttpResponse;
+import api.exception.TestException;
 
 public interface ValidationStrategy {
-    void validate(ApiResponse response) throws ApiTestException.ResponseValidationException;
+    void validate(HttpResponse response) throws TestException.ResponseValidationException;
 }

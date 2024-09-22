@@ -1,6 +1,6 @@
 package api.validation;
 
-import api.model.ApiResponse;
+import api.model.HttpResponse;
 import api.request.HttpRequestBuilder;
 import io.restassured.path.json.JsonPath;
 import org.slf4j.Logger;
@@ -15,7 +15,7 @@ public class DynamicValidator {
         logger.info("Starting dynamic validation for endpoint: {}", endpoint);
 
         // 执行请求前获取初始状态
-        ApiResponse initialResponse = new ApiResponse(requestBuilder.setEndpoint(endpoint).execute());
+        HttpResponse initialResponse = new HttpResponse(requestBuilder.setEndpoint(endpoint).execute());
         JsonPath initialJson = new JsonPath(initialResponse.getBodyAsString());
         logger.debug("Initial state fetched");
 
@@ -24,7 +24,7 @@ public class DynamicValidator {
         logger.debug("Main request executed");
 
         // 执行请求后再次获取状态
-        ApiResponse finalResponse = new ApiResponse(requestBuilder.setEndpoint(endpoint).execute());
+        HttpResponse finalResponse = new HttpResponse(requestBuilder.setEndpoint(endpoint).execute());
         JsonPath finalJson = new JsonPath(finalResponse.getBodyAsString());
         logger.debug("Final state fetched");
 

@@ -1,15 +1,15 @@
 package api.exception;
 
-public class ApiTestException extends RuntimeException {
-    public ApiTestException(String message) {
+public class TestException extends RuntimeException {
+    public TestException(String message) {
         super(message);
     }
 
-    public ApiTestException(String message, Throwable cause) {
+    public TestException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public static class RequestPreparationException extends ApiTestException {
+    public static class RequestPreparationException extends TestException {
         public RequestPreparationException(String message) {
             super("Error preparing request: " + message);
         }
@@ -19,7 +19,7 @@ public class ApiTestException extends RuntimeException {
         }
     }
 
-    public static class RequestExecutionException extends ApiTestException {
+    public static class RequestExecutionException extends TestException {
         public RequestExecutionException(String message) {
             super("Error executing request: " + message);
         }
@@ -29,7 +29,7 @@ public class ApiTestException extends RuntimeException {
         }
     }
 
-    public static class ResponseValidationException extends ApiTestException {
+    public static class ResponseValidationException extends TestException {
         public ResponseValidationException(String message) {
             super("Error validating response: " + message);
         }
@@ -39,7 +39,7 @@ public class ApiTestException extends RuntimeException {
         }
     }
 
-    public static class ConfigurationException extends ApiTestException {
+    public static class ConfigurationException extends TestException {
         public ConfigurationException(String message) {
             super("Configuration error: " + message);
         }

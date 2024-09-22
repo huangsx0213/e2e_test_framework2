@@ -1,8 +1,8 @@
 package api.validation;
 
-import api.model.ApiResponse;
+import api.model.HttpResponse;
 import api.request.HttpRequestBuilder;
-import api.exception.ApiTestException;
+import api.exception.TestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,14 +19,14 @@ public class FetchReferenceStateStrategy implements ValidationStrategy {
     }
 
     @Override
-    public void validate(ApiResponse response) throws ApiTestException.ResponseValidationException {
+    public void validate(HttpResponse response) throws TestException.ResponseValidationException {
         logger.info("Fetching reference state from: {}", requestBuilder.getEndpoint());
         try {
-            ApiResponse referenceResponse = new ApiResponse(requestBuilder.execute());
+            HttpResponse referenceResponse = new HttpResponse(requestBuilder.execute());
             state = referenceResponse.jsonPath().getMap("");
             logger.info("Reference state fetched successfully");
         } catch (Exception e) {
-            throw new ApiTestException.ResponseValidationException("Failed to fetch reference state", e);
+            throw new TestException.ResponseValidationException("Failed to fetch reference state", e);
         }
     }
 

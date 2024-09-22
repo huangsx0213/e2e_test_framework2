@@ -2,7 +2,7 @@ package api.request;
 
 import api.config.ConfigManager;
 import api.template.TemplateProcessor;
-import api.exception.ApiTestException;
+import api.exception.TestException;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.response.Response;
@@ -87,7 +87,7 @@ public class HttpRequestBuilder {
                 logger.debug("Built request body using template: {} and overrides", bodyTemplateKey);
             } catch (Exception e) {
                 logger.error("Failed to build request body", e);
-                throw new ApiTestException.RequestPreparationException("Failed to build request body", e);
+                throw new TestException.RequestPreparationException("Failed to build request body", e);
             }
         }
     }
@@ -101,14 +101,14 @@ public class HttpRequestBuilder {
                 logger.debug("Built request headers using template: {} and overrides", headersTemplateKey);
             } catch (Exception e) {
                 logger.error("Failed to build request headers", e);
-                throw new ApiTestException.RequestPreparationException("Failed to build request headers", e);
+                throw new TestException.RequestPreparationException("Failed to build request headers", e);
             }
         }
     }
 
     public Response execute() {
         if (endpoint == null || method == null) {
-            throw new ApiTestException.RequestPreparationException("Endpoint or method not set");
+            throw new TestException.RequestPreparationException("Endpoint or method not set");
         }
 
         buildRequestBody();

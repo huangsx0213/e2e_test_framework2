@@ -1,6 +1,6 @@
 package api.config;
 
-import api.model.TestCase;
+import api.model.APITestCase;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
@@ -13,18 +13,19 @@ import java.util.stream.Collectors;
 
 public class ExcelDataReader {
     private static final Logger logger = LoggerFactory.getLogger(ExcelDataReader.class);
-    private static final String EXCEL_FILE_PATH = "src/test/resources/cases/api_test_cases.xlsx";
-    private static final Map<String, List<TestCase>> cache = new HashMap<>();
+    private static final Map<String, List<APITestCase>> cache = new HashMap<>();
 
-    public static List<TestCase> readTestData(String sheetName) {
+    public static List<APITestCase> readTestData(String sheetName) {
+        String project = ConfigManager.getInstance().getCurrentProject();
+        String excelFilePath = String.format("src/test/resources/cases/%s/api_test_cases.xlsx", project);
         if (cache.containsKey(sheetName)) {
             logger.info("Returning cached test cases for sheet: {}", sheetName);
             return cache.get(sheetName);
         }
 
-        List<TestCase> testCases = new ArrayList<>();
+        List<APITestCase> APITestCases = new ArrayList<>();
 
-        try (FileInputStream fis = new FileInputStream(EXCEL_FILE_PATH);
+        try (FileInputStream fis = new FileInputStream(excelFilePath);
              Workbook workbook = new XSSFWorkbook(fis)) {
 
             Sheet sheet = workbook.getSheet(sheetName);
@@ -38,24 +39,24 @@ public class ExcelDataReader {
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row != null) {
-                    TestCase testCase = createTestCase(row, headerMap);
-                    if (testCase.isValid()) {
-                        testCases.add(testCase);
+                    APITestCase APITestCase = createTestCase(row, headerMap);
+                    if (APITestCase.isValid()) {
+                        APITestCases.add(APITestCase);
                     } else {
-                        logger.warn("Invalid test case at row {}: {}", i + 1, testCase);
+                        logger.warn("Invalid test case at row {}: {}", i + 1, APITestCase);
                     }
                 }
             }
 
-            cache.put(sheetName, testCases);
-            logger.info("Loaded {} valid test cases from sheet: {}", testCases.size(), sheetName);
+            cache.put(sheetName, APITestCases);
+            logger.info("Loaded {} valid test cases from sheet: {}", APITestCases.size(), sheetName);
 
         } catch (IOException e) {
-            logger.error("Failed to read Excel file: {}", EXCEL_FILE_PATH, e);
+            logger.error("Failed to read Excel file: {}", excelFilePath, e);
             throw new RuntimeException("Failed to read Excel file", e);
         }
 
-        return testCases;
+        return APITestCases;
     }
 
     private static Map<String, Integer> createHeaderMap(Row headerRow) {
@@ -67,27 +68,27 @@ public class ExcelDataReader {
         return headerMap;
     }
 
-    private static TestCase createTestCase(Row row, Map<String, Integer> headerMap) {
-        TestCase testCase = new TestCase();
+    private static APITestCase createTestCase(Row row, Map<String, Integer> headerMap) {
+        APITestCase APITestCase = new APITestCase();
 
-        setTestCaseField(testCase, "TCID", getCellValueAsString(row, headerMap.get("TCID")));
-        setTestCaseField(testCase, "Name", getCellValueAsString(row, headerMap.get("Name")));
-        setTestCaseField(testCase, "Descriptions", getCellValueAsString(row, headerMap.get("Descriptions")));
-        setTestCaseField(testCase, "Conditions", parseList(getCellValueAsString(row, headerMap.get("Conditions"))));
-        setTestCaseField(testCase, "EndpointKey", getCellValueAsString(row, headerMap.get("Endpoint Key")));
-        setTestCaseField(testCase, "HeadersTemplateKey", getCellValueAsString(row, headerMap.get("Headers Template Key")));
-        setTestCaseField(testCase, "HeaderOverride", parseList(getCellValueAsString(row, headerMap.get("Header Override"))));
-        setTestCaseField(testCase, "BodyTemplateKey", getCellValueAsString(row, headerMap.get("Body Template Key")));
-        setTestCaseField(testCase, "BodyOverride", parseList(getCellValueAsString(row, headerMap.get("Body Override"))));
-        setTestCaseField(testCase, "Run", "Y".equalsIgnoreCase(getCellValueAsString(row, headerMap.get("Run"))));
-        setTestCaseField(testCase, "Tags", parseList(getCellValueAsString(row, headerMap.get("Tags"))));
-        setTestCaseField(testCase, "ExpStatus", parseInteger(getCellValueAsString(row, headerMap.get("Exp Status"))));
-        setTestCaseField(testCase, "ExpResult", parseList(getCellValueAsString(row, headerMap.get("Exp Result"))));
-        setTestCaseField(testCase, "SaveFields", parseList(getCellValueAsString(row, headerMap.get("Save Fields"))));
-        setTestCaseField(testCase, "DynamicValidationEndpoint", getCellValueAsString(row, headerMap.get("Dynamic Validation Endpoint")));
-        setTestCaseField(testCase, "DynamicValidationExpectedChanges", parseMap(getCellValueAsString(row, headerMap.get("Dynamic Validation Expected Changes"))));
+        setTestCaseField(APITestCase, "TCID", getCellValueAsString(row, headerMap.get("TCID")));
+        setTestCaseField(APITestCase, "Name", getCellValueAsString(row, headerMap.get("Name")));
+        setTestCaseField(APITestCase, "Descriptions", getCellValueAsString(row, headerMap.get("Descriptions")));
+        setTestCaseField(APITestCase, "Conditions", parseList(getCellValueAsString(row, headerMap.get("Conditions"))));
+        setTestCaseField(APITestCase, "EndpointKey", getCellValueAsString(row, headerMap.get("Endpoint Key")));
+        setTestCaseField(APITestCase, "HeadersTemplateKey", getCellValueAsString(row, headerMap.get("Headers Template Key")));
+        setTestCaseField(APITestCase, "HeaderOverride", parseList(getCellValueAsString(row, headerMap.get("Header Override"))));
+        setTestCaseField(APITestCase, "BodyTemplateKey", getCellValueAsString(row, headerMap.get("Body Template Key")));
+        setTestCaseField(APITestCase, "BodyOverride", parseList(getCellValueAsString(row, headerMap.get("Body Override"))));
+        setTestCaseField(APITestCase, "Run", "Y".equalsIgnoreCase(getCellValueAsString(row, headerMap.get("Run"))));
+        setTestCaseField(APITestCase, "Tags", parseList(getCellValueAsString(row, headerMap.get("Tags"))));
+        setTestCaseField(APITestCase, "ExpStatus", parseInteger(getCellValueAsString(row, headerMap.get("Exp Status"))));
+        setTestCaseField(APITestCase, "ExpResult", parseList(getCellValueAsString(row, headerMap.get("Exp Result"))));
+        setTestCaseField(APITestCase, "SaveFields", parseList(getCellValueAsString(row, headerMap.get("Save Fields"))));
+        setTestCaseField(APITestCase, "DynamicValidationEndpoint", getCellValueAsString(row, headerMap.get("Dynamic Validation Endpoint")));
+        setTestCaseField(APITestCase, "DynamicValidationExpectedChanges", parseMap(getCellValueAsString(row, headerMap.get("Dynamic Validation Expected Changes"))));
 
-        return testCase;
+        return APITestCase;
     }
 
     private static String getCellValueAsString(Row row, Integer cellIndex) {
@@ -110,18 +111,18 @@ public class ExcelDataReader {
         }
     }
 
-    private static void setTestCaseField(TestCase testCase, String fieldName, Object value) {
+    private static void setTestCaseField(APITestCase APITestCase, String fieldName, Object value) {
         try {
             if (value instanceof List) {
-                testCase.getClass().getMethod("set" + fieldName, List.class).invoke(testCase, value);
+                APITestCase.getClass().getMethod("set" + fieldName, List.class).invoke(APITestCase, value);
             } else if (value instanceof Map) {
-                testCase.getClass().getMethod("set" + fieldName, Map.class).invoke(testCase, value);
+                APITestCase.getClass().getMethod("set" + fieldName, Map.class).invoke(APITestCase, value);
             } else if (value instanceof Boolean) {
-                testCase.getClass().getMethod("set" + fieldName, boolean.class).invoke(testCase, value);
+                APITestCase.getClass().getMethod("set" + fieldName, boolean.class).invoke(APITestCase, value);
             } else if (value instanceof Integer) {
-                testCase.getClass().getMethod("set" + fieldName, int.class).invoke(testCase, value);
+                APITestCase.getClass().getMethod("set" + fieldName, int.class).invoke(APITestCase, value);
             } else {
-                testCase.getClass().getMethod("set" + fieldName, String.class).invoke(testCase, value);
+                APITestCase.getClass().getMethod("set" + fieldName, String.class).invoke(APITestCase, value);
             }
         } catch (Exception e) {
             logger.error("Failed to set field: {} with value: {}", fieldName, value, e);

@@ -3,7 +3,7 @@ package api.model;
 import java.util.List;
 import java.util.Map;
 
-public class TestCase {
+public class APITestCase {
     private String tcid;
     private String name;
     private String descriptions;
@@ -80,7 +80,7 @@ public class TestCase {
 
     @Override
     public String toString() {
-        return "TestCase{" +
+        return "APITestCase{" +
                 "tcid='" + tcid + '\'' +
                 ", name='" + name + '\'' +
                 ", endpointKey='" + endpointKey + '\'' +

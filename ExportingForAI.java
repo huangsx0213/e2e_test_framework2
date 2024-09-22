@@ -36,7 +36,7 @@ public class ExportingForAI {
 
     public void export() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE))) {
-            writer.write("File Structure:\n");
+            writer.write("e2e testing framework File Structure:\n");
             exportDirectory(new File(ROOT_DIRECTORY), "", writer);
             writer.write("\nFile Contents:\n");
             exportContents(new File(ROOT_DIRECTORY), writer);

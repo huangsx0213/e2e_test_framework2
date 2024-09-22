@@ -18,7 +18,7 @@ public class ConfigManager {
 
     // 私有构造函数，调用loadConfigs()加载配置
     private ConfigManager() {
-        loadConfigs();
+
     }
 
     // 单例模式的获取实例方法
@@ -35,8 +35,8 @@ public class ConfigManager {
 
     // 加载配置文件
     private void loadConfigs() {
-        apiEndpointConfig = loadConfig(API_ENDPOINT_CONFIG_FILE);
-//        projectTemplateConfig = loadConfig(PROJECT_TEMPLATE_CONFIG_FILE);
+        String projectConfigPath = String.format("/config/%s/api-endpoint-config.yaml", currentProject);
+        apiEndpointConfig = loadConfig(projectConfigPath);
     }
 
     // 抽取加载配置逻辑，重用代码
@@ -60,6 +60,7 @@ public class ConfigManager {
     // 设置项目名称
     public void setProject(String project) {
         this.currentProject = project;
+        loadConfigs();
     }
 
     // 获取API端点URL

@@ -6,7 +6,7 @@
 
     <groupId>EndtoEndTesting</groupId>
     <artifactId>end_to_end_test_framework</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>v1.0</version>
 
     <properties>
         <serenity.version>4.1.3</serenity.version>

@@ -8,14 +8,14 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.Optional;
 
-public class ApiResponse {
-    private static final Logger logger = LoggerFactory.getLogger(ApiResponse.class);
+public class HttpResponse {
+    private static final Logger logger = LoggerFactory.getLogger(HttpResponse.class);
     private final Response response;
     private JsonPath jsonPath;
 
-    public ApiResponse(Response response) {
+    public HttpResponse(Response response) {
         this.response = response;
-        logger.debug("Created ApiResponse with status code: {}", response.getStatusCode());
+        logger.debug("Created HttpResponse with status code: {}", response.getStatusCode());
     }
 
     public int getStatusCode() {
