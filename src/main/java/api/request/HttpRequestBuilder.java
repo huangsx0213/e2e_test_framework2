@@ -26,6 +26,7 @@ public class HttpRequestBuilder {
     private String headersTemplateKey;
     private Map<String, String> bodyOverride;
     private Map<String, String> headerOverride;
+    private boolean relaxedHttps = false;
 
     public HttpRequestBuilder(ConfigManager configManager) {
         this.configManager = configManager;
@@ -66,7 +67,11 @@ public class HttpRequestBuilder {
         logger.debug("Set header override: {}", override);
         return this;
     }
-
+    public HttpRequestBuilder setRelaxedHTTPSValidation() {
+        this.relaxedHttps = true;
+        logger.debug("Enabled relaxed HTTPS validation");
+        return this;
+    }
     public HttpRequestBuilder addQueryParam(String name, Object value) {
         queryParams.put(name, value);
         logger.debug("Added query parameter: {} = {}", name, value);
@@ -109,6 +114,11 @@ public class HttpRequestBuilder {
     public Response execute() {
         if (endpoint == null || method == null) {
             throw new TestException.RequestPreparationException("Endpoint or method not set");
+        }
+
+        if (relaxedHttps) {
+            RestAssured.useRelaxedHTTPSValidation();
+            logger.warn("Using relaxed HTTPS validation. This should only be used for testing purposes.");
         }
 
         buildRequestBody();

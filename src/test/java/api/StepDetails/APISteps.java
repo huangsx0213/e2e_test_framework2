@@ -2,12 +2,14 @@ package api.StepDetails;
 
 import api.config.ConfigManager;
 import api.context.TestContext;
+import api.model.APITestCase;
 import api.model.HttpResponse;
 import api.request.HttpRequestBuilder;
 import net.serenitybdd.annotations.Step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +55,7 @@ public class APISteps {
 
     @Step("Send the API request")
     public APISteps sendRequest() {
-        httpResponse = new HttpResponse(requestBuilder.execute());
+        httpResponse = new HttpResponse(requestBuilder.setRelaxedHTTPSValidation().execute());
         httpResponse.logResponse();
         return this;
     }
@@ -88,6 +90,29 @@ public class APISteps {
             logger.info("Stored response value: {} = {}", key, value);
         }
         return this;
+    }
+
+    @Step("Execute API request for test case {0}")
+    public HttpResponse executeTestCase(APITestCase testCase) {
+        prepareRequest(testCase.getEndpointKey())
+                .setRequestHeaders(testCase.getHeadersTemplateKey(), parseKeyValuePairs(testCase.getHeaderOverride()))
+                .setRequestBody(testCase.getBodyTemplateKey(), parseKeyValuePairs(testCase.getBodyOverride()));
+        return new HttpResponse(requestBuilder.setRelaxedHTTPSValidation().execute());
+    }
+
+    private Map<String, String> parseKeyValuePairs(List<String> pairs) {
+        Map<String, String> result = new HashMap<>();
+        if (pairs != null) {
+            pairs.forEach(pair -> {
+                String[] keyValue = pair.split("[:=]", 2);
+                if (keyValue.length == 2) {
+                    result.put(keyValue[0].trim(), keyValue[1].trim());
+                } else {
+                    logger.warn("Invalid key-value pair: {}", pair);
+                }
+            });
+        }
+        return result;
     }
 
     public HttpRequestBuilder getRequestBuilder() {

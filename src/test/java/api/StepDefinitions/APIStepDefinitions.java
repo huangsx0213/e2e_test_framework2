@@ -23,6 +23,19 @@ public class APIStepDefinitions {
     private APITestCase currentAPITestCase;
     private static List<APITestCase> apiTestCases;
 
+
+    @Given("I am working on the {string} project")
+    public void iAmWorkingOnTheProject(String project) {
+        apiSteps.setProject(project);
+        logger.info("Project set: {}", project);
+    }
+
+    @And("I am using the {string} environment")
+    public void iAmUsingTheEnvironment(String environment) {
+        apiSteps.setEnvironment(environment);
+        logger.info("Environment set: {}", environment);
+    }
+
     @Given("I have test cases for {string}")
     public void iHaveTestDataFor(String tcid) {
         loadTestCases();
@@ -31,7 +44,6 @@ public class APIStepDefinitions {
 
     @When("I execute the API request")
     public void iExecuteTheAPIRequest() {
-        setupApiRequest();
         executeRequestOrValidate();
     }
 
@@ -45,17 +57,6 @@ public class APIStepDefinitions {
         storeResponseValues();
     }
 
-    @And("I am using the {string} environment")
-    public void iAmUsingTheEnvironment(String environment) {
-        apiSteps.setEnvironment(environment);
-        logger.info("Environment set: {}", environment);
-    }
-
-    @Given("I am working on the {string} project")
-    public void iAmWorkingOnTheProject(String project) {
-        apiSteps.setProject(project);
-        logger.info("Project set: {}", project);
-    }
 
     private void loadTestCases() {
         if (apiTestCases == null) {
@@ -74,26 +75,33 @@ public class APIStepDefinitions {
                 });
     }
 
-    private void setupApiRequest() {
-        apiSteps.prepareRequest(currentAPITestCase.getEndpointKey())
-                .setRequestHeaders(currentAPITestCase.getHeadersTemplateKey(), parseKeyValuePairs(currentAPITestCase.getHeaderOverride()))
-                .setRequestBody(currentAPITestCase.getBodyTemplateKey(), parseKeyValuePairs(currentAPITestCase.getBodyOverride()));
+
+    private void setupApiRequest(APITestCase testCase) {
+        apiSteps.prepareRequest(testCase.getEndpointKey())
+                .setRequestHeaders(testCase.getHeadersTemplateKey(), parseKeyValuePairs(testCase.getHeaderOverride()))
+                .setRequestBody(testCase.getBodyTemplateKey(), parseKeyValuePairs(testCase.getBodyOverride()));
     }
 
     private void executeRequestOrValidate() {
-        Optional<String> dynamicValidationEndpoint = Optional.ofNullable(currentAPITestCase.getDynamicValidationEndpoint());
-        if (dynamicValidationEndpoint.isPresent() && !dynamicValidationEndpoint.get().isEmpty()) {
+        Optional<String> dynamicValidationTCID = Optional.ofNullable(currentAPITestCase.getDynamicValidationTCID());
+        if (dynamicValidationTCID.isPresent() && !dynamicValidationTCID.get().isEmpty()) {
+            APITestCase validationTestCase = findTestCaseByTCID(dynamicValidationTCID.get());
             DynamicValidator.validate(
-                    dynamicValidationEndpoint.get(),
-                    currentAPITestCase.getDynamicValidationExpectedChanges(),
-                    apiSteps.getRequestBuilder()
+                    validationTestCase,
+                    currentAPITestCase,
+                    () -> {
+                        setupApiRequest(currentAPITestCase);
+                        apiSteps.sendRequest();
+                    }
             );
-            logger.info("Dynamic validation performed for endpoint: {}", dynamicValidationEndpoint.get());
+            logger.info("Dynamic validation performed using TCID: {}", dynamicValidationTCID.get());
         } else {
+            setupApiRequest(currentAPITestCase);
             apiSteps.sendRequest();
             logger.info("API request executed for endpoint: {}", currentAPITestCase.getEndpointKey());
         }
     }
+
 
     private void verifyApiResponse() {
         apiSteps.verifyResponseStatusCode(currentAPITestCase.getExpStatus())

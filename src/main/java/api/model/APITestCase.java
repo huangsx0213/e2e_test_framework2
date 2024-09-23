@@ -18,7 +18,7 @@ public class APITestCase {
     private int expStatus;
     private List<String> expResult;
     private List<String> saveFields;
-    private String dynamicValidationEndpoint;
+    private String dynamicValidationTCID;
     private Map<String, String> dynamicValidationExpectedChanges;
 
     // Getters and setters
@@ -64,8 +64,8 @@ public class APITestCase {
     public List<String> getSaveFields() { return saveFields; }
     public void setSaveFields(List<String> saveFields) { this.saveFields = saveFields; }
 
-    public String getDynamicValidationEndpoint() { return dynamicValidationEndpoint; }
-    public void setDynamicValidationEndpoint(String dynamicValidationEndpoint) { this.dynamicValidationEndpoint = dynamicValidationEndpoint; }
+    public String getDynamicValidationTCID() { return dynamicValidationTCID; }
+    public void setDynamicValidationTCID(String dynamicValidationTCID) { this.dynamicValidationTCID = dynamicValidationTCID; }
 
     public Map<String, String> getDynamicValidationExpectedChanges() { return dynamicValidationExpectedChanges; }
     public void setDynamicValidationExpectedChanges(Map<String, String> dynamicValidationExpectedChanges) { this.dynamicValidationExpectedChanges = dynamicValidationExpectedChanges; }

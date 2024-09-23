@@ -85,7 +85,7 @@ public class ExcelDataReader {
         setTestCaseField(APITestCase, "ExpStatus", parseInteger(getCellValueAsString(row, headerMap.get("Exp Status"))));
         setTestCaseField(APITestCase, "ExpResult", parseList(getCellValueAsString(row, headerMap.get("Exp Result"))));
         setTestCaseField(APITestCase, "SaveFields", parseList(getCellValueAsString(row, headerMap.get("Save Fields"))));
-        setTestCaseField(APITestCase, "DynamicValidationEndpoint", getCellValueAsString(row, headerMap.get("Dynamic Validation Endpoint")));
+        setTestCaseField(APITestCase, "DynamicValidationTCID", getCellValueAsString(row, headerMap.get("Dynamic Validation TCID")));
         setTestCaseField(APITestCase, "DynamicValidationExpectedChanges", parseMap(getCellValueAsString(row, headerMap.get("Dynamic Validation Expected Changes"))));
 
         return APITestCase;

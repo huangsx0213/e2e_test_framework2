@@ -1,17 +1,17 @@
 dev:
   endpoints:
-    add_data:
+    summary:
       method: POST
-      url: https://stu-us1.westus3.cloudapp.azure.com/api/data
+      url: https://stu-us1.westus3.cloudapp.azure.com/api/summary
     get_data:
       method: POST
       url: https://stu-us1.westus3.cloudapp.azure.com/api/data
 
 sit:
   endpoints:
-    add_data:
+    summary:
       method: POST
-      url: https://stu-us1.westus3.cloudapp.azure.com/api/data
+      url: https://stu-us1.westus3.cloudapp.azure.com/api/summary
     get_data:
       method: POST
       url: https://stu-us1.westus3.cloudapp.azure.com/api/data

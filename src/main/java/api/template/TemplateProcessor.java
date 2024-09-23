@@ -32,6 +32,11 @@ public class TemplateProcessor {
     }
 
     public static String renderTemplate(String templateName, Map<String, String> data) throws TestException {
+        if (templateName == null || templateName.trim().isEmpty()) {
+            logger.warn("Template name is null or empty, returning empty string");
+            return ""; // 返回空字符串
+        }
+
         try (StringWriter writer = new StringWriter()) {
             Template template = configuration.getTemplate(templateName);
             template.process(data, writer);
