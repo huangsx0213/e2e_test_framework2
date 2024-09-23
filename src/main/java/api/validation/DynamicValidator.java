@@ -17,30 +17,26 @@ public class DynamicValidator {
     private static final Logger logger = LoggerFactory.getLogger(DynamicValidator.class);
     private static final ConfigManager configManager = ConfigManager.getInstance();
 
-    public static void validate(APITestCase validationTestCase, APITestCase currentTestCase, Runnable executeMainRequest) {
-        logger.info("Starting dynamic validation using TCID: {}", validationTestCase.getTCID());
-        logger.debug("Initial state fetching by {}", validationTestCase.getTCID());
-        HttpRequestBuilder requestBuilder = new HttpRequestBuilder(configManager);
+    public static void validate(HttpResponse beforeResponse, HttpResponse afterResponse, Map<String, String> expectedChanges) {
+        logger.info("Starting dynamic validation");
+        for (Map.Entry<String, String> entry : expectedChanges.entrySet()) {
+            String field = entry.getKey();
+            String expectedChange = entry.getValue();
 
-        // Execute validation request before main request
-        HttpResponse beforeResponse = executeValidationRequest(requestBuilder, validationTestCase);
-        beforeResponse.logResponse();
-        logger.debug("Initial state fetched");
+            Object beforeValue = beforeResponse.jsonPath().get(field);
+            Object afterValue = afterResponse.jsonPath().get(field);
 
-        // Execute main request
-        logger.debug("Executing main request for {}",currentTestCase.getTCID());
-        executeMainRequest.run();
-        logger.debug("Main request executed");
+            logger.debug("Validating field: {}. Before value: {}, After value: {}, Expected change: {}",
+                    field, beforeValue, afterValue, expectedChange);
 
-        // Execute validation request after main request
-        logger.debug("Final state fetching by {}", validationTestCase.getTCID());
-        HttpResponse afterResponse = executeValidationRequest(requestBuilder, validationTestCase);
-        afterResponse.logResponse();
-        logger.debug("Final state fetched");
-
-        // Validate expected changes
-        validateChanges(beforeResponse, afterResponse, currentTestCase.getDynamicValidationExpectedChanges());
-
+            if (expectedChange.startsWith("+")) {
+                validateIncrease(field, beforeValue, afterValue, expectedChange);
+            } else if (expectedChange.startsWith("-")) {
+                validateDecrease(field, beforeValue, afterValue, expectedChange);
+            } else {
+                validateExactMatch(field, afterValue, expectedChange);
+            }
+        }
         logger.info("Dynamic validation completed successfully");
     }
 

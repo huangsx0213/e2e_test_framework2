@@ -1,8 +1,10 @@
 package api.StepDefinitions;
 
+import api.context.TestContext;
 import api.model.APITestCase;
 import api.StepDetails.APISteps;
 import api.config.ExcelDataReader;
+import api.model.HttpResponse;
 import api.validation.DynamicValidator;
 import io.cucumber.java.en.*;
 import net.serenitybdd.annotations.Steps;
@@ -44,12 +46,47 @@ public class APIStepDefinitions {
 
     @When("I execute the API request")
     public void iExecuteTheAPIRequest() {
-        executeRequestOrValidate();
+        executeDynamicValidationPreRequests();
+        executeMainRequest();
+    }
+
+    private void executeDynamicValidationPreRequests() {
+        Optional<String> dynamicValidationTCID = Optional.ofNullable(currentAPITestCase.getDynamicValidationTCID());
+        if (dynamicValidationTCID.isPresent() && !dynamicValidationTCID.get().isEmpty()) {
+            logger.info("Dynamic validation pre-request setup using TCID: {}", dynamicValidationTCID.get());
+            APITestCase validationTestCase = findTestCaseByTCID(dynamicValidationTCID.get());
+            HttpResponse preValidationResponse = apiSteps.executeTestCase(validationTestCase);
+            TestContext.getInstance().setData("preValidationResponse", preValidationResponse);
+            logger.info("Dynamic validation pre-request executed using TCID: {}", dynamicValidationTCID.get());
+        }
+    }
+
+    private void executeMainRequest() {
+        logger.info("Executing main API request for TCID: {}", currentAPITestCase.getTCID());
+        setupApiRequest(currentAPITestCase);
+        apiSteps.sendRequest();
+        logger.info("Main API request executed for TCID: {}", currentAPITestCase.getTCID());
     }
 
     @Then("I verify the API response")
     public void iVerifyTheAPIResponse() {
         verifyApiResponse();
+        performDynamicValidation();
+    }
+
+    private void performDynamicValidation() {
+        Optional<String> dynamicValidationTCID = Optional.ofNullable(currentAPITestCase.getDynamicValidationTCID());
+        if (dynamicValidationTCID.isPresent() && !dynamicValidationTCID.get().isEmpty()) {
+            APITestCase validationTestCase = findTestCaseByTCID(dynamicValidationTCID.get());
+            HttpResponse preValidationResponse = TestContext.getInstance().getData("preValidationResponse", HttpResponse.class)
+                    .orElseThrow(() -> new IllegalStateException("Pre-validation response not found in context"));
+            logger.info("Dynamic validation post-request setup using TCID: {}", dynamicValidationTCID.get());
+            HttpResponse postValidationResponse = apiSteps.executeTestCase(validationTestCase);
+            logger.info("Dynamic validation post-request executed using TCID: {}", dynamicValidationTCID.get());
+
+            DynamicValidator.validate(preValidationResponse, postValidationResponse, currentAPITestCase.getDynamicValidationExpectedChanges());
+            logger.info("Dynamic validation finished for TCID: {}", currentAPITestCase.getTCID());
+        }
     }
 
     @And("I store the response value")
@@ -81,27 +118,6 @@ public class APIStepDefinitions {
                 .setRequestHeaders(testCase.getHeadersTemplateKey(), parseKeyValuePairs(testCase.getHeaderOverride()))
                 .setRequestBody(testCase.getBodyTemplateKey(), parseKeyValuePairs(testCase.getBodyOverride()));
     }
-
-    private void executeRequestOrValidate() {
-        Optional<String> dynamicValidationTCID = Optional.ofNullable(currentAPITestCase.getDynamicValidationTCID());
-        if (dynamicValidationTCID.isPresent() && !dynamicValidationTCID.get().isEmpty()) {
-            APITestCase validationTestCase = findTestCaseByTCID(dynamicValidationTCID.get());
-            DynamicValidator.validate(
-                    validationTestCase,
-                    currentAPITestCase,
-                    () -> {
-                        setupApiRequest(currentAPITestCase);
-                        apiSteps.sendRequest();
-                    }
-            );
-            logger.info("Dynamic validation performed using TCID: {}", dynamicValidationTCID.get());
-        } else {
-            setupApiRequest(currentAPITestCase);
-            apiSteps.sendRequest();
-            logger.info("API request executed for endpoint: {}", currentAPITestCase.getEndpointKey());
-        }
-    }
-
 
     private void verifyApiResponse() {
         apiSteps.verifyResponseStatusCode(currentAPITestCase.getExpStatus())
