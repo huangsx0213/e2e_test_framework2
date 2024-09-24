@@ -1,13 +1,11 @@
 package api.validation;
 
-
 import api.model.HttpResponse;
 import api.config.ConfigManager;
 import api.exception.TestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Map;
-
 
 public class DynamicValidator {
     private static final Logger logger = LoggerFactory.getLogger(DynamicValidator.class);
@@ -35,7 +33,6 @@ public class DynamicValidator {
         logger.info("Dynamic validation completed successfully");
     }
 
-
     private static void validateIncrease(String field, Object beforeValue, Object afterValue, String expectedChange) {
         float change = Float.parseFloat(expectedChange.substring(1));
         float after = Float.parseFloat(afterValue.toString());
@@ -59,5 +56,4 @@ public class DynamicValidator {
                             field, expectedChange, afterValue));
         }
     }
-
 }

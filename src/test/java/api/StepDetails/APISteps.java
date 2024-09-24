@@ -12,9 +12,8 @@ import net.serenitybdd.annotations.Step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class APISteps {
     private static final Logger logger = LoggerFactory.getLogger(APISteps.class);
@@ -44,7 +43,7 @@ public class APISteps {
 
     @Step("Execute API request")
     public void executeAPIRequest() {
-        executePreValidationRequest();
+        executePreValidationRequests();
         executeMainRequest();
     }
 
@@ -62,17 +61,29 @@ public class APISteps {
                 .ifPresent(this::storeResponseValue);
     }
 
-    private void executePreValidationRequest() {
-        Optional.ofNullable(currentAPITestCase.getDynamicValidationTCID())
-                .filter(tcid -> !tcid.isEmpty())
-                .ifPresent(this::executeValidationRequest);
+    private void executePreValidationRequests() {
+        Map<String, String> expResult = Utils.parseKeyValuePairs(currentAPITestCase.getExpResult());
+        Set<String> preValidationTcids = extractPreValidationTcids(expResult);
+
+        for (String tcid : preValidationTcids) {
+            executeValidationRequest(tcid);
+        }
     }
+
+    private Set<String> extractPreValidationTcids(Map<String, String> expResult) {
+        return expResult.keySet().stream()
+                .filter(key -> key.contains(".") && !key.startsWith(currentAPITestCase.getTCID()))
+                .map(key -> key.substring(0, key.indexOf('.')))
+                .collect(Collectors.toSet());
+    }
+
     private void executeValidationRequest(String tcid) {
-        logger.info("Executing dynamic validation request for TCID: {}", tcid);
+        logger.info("Executing dynamic validation request by TCID: {}", tcid);
         APITestCase validationTestCase = TestCaseManager.findTestCaseByTCID(tcid);
         HttpResponse response = prepareAndSendRequest(validationTestCase);
-        testContext.setData("preValidationResponse", response);
+        testContext.setData("preValidationResponse_" + tcid, response);
     }
+
     private void executeMainRequest() {
         logger.info("Executing main API request for TCID: {}", currentAPITestCase.getTCID());
         httpResponse = prepareAndSendRequest(currentAPITestCase);
@@ -101,41 +112,69 @@ public class APISteps {
     private void verifyResponseStatusCode() {
         int expectedStatusCode = currentAPITestCase.getExpStatus();
         int actualStatusCode = httpResponse.getStatusCode();
-        assert actualStatusCode == expectedStatusCode :
-                String.format("Expected status code %d but got %d", expectedStatusCode, actualStatusCode);
+        if (actualStatusCode != expectedStatusCode) {
+            throw new AssertionError(String.format("Expected status code %d but got %d", expectedStatusCode, actualStatusCode));
+        }
         logger.info("Verified response status code: {}", actualStatusCode);
     }
 
     private void verifyResponseContent() {
         Map<String, String> expectedData = Utils.parseKeyValuePairs(currentAPITestCase.getExpResult());
-        expectedData.forEach((key, expectedValue) -> {
-            String actualValue = httpResponse.jsonPath().getString(key);
-            assert actualValue != null && actualValue.equals(expectedValue) :
-                    String.format("Expected %s to be %s but got %s", key, expectedValue, actualValue);
-            logger.info("Verified response field: {} = {}", key, actualValue);
-        });
+        expectedData.forEach(this::verifyResponseField);
+    }
+
+    private void verifyResponseField(String key, String expectedValue) {
+        String actualValue;
+        if (isDynamicField(key)) {
+            return;
+        }
+        String field = key.substring(key.indexOf('.') + 1);
+        actualValue = httpResponse.jsonPath().getString(field);
+        if (actualValue == null || !actualValue.equals(expectedValue)) {
+            throw new AssertionError(String.format("Expected %s to be %s but got %s", key, expectedValue, actualValue));
+        }
+        logger.info("Verified response field: {} = {}", key, actualValue);
+    }
+
+    private boolean isDynamicField(String key) {
+        return key.contains(".") && !key.startsWith(currentAPITestCase.getTCID());
     }
 
     private void executeDynamicValidation() {
-        Optional.ofNullable(currentAPITestCase.getDynamicValidationTCID())
-                .filter(tcid -> !tcid.isEmpty())
-                .ifPresent(this::performDynamicValidation);
+        Map<String, String> expResult = Utils.parseKeyValuePairs(currentAPITestCase.getExpResult());
+        Map<String, Map<String, String>> dynamicValidations = extractDynamicValidations(expResult);
+
+        dynamicValidations.forEach(this::executeValidationForTcid);
     }
 
-    private void performDynamicValidation(String tcid) {
-        APITestCase validationTestCase = TestCaseManager.findTestCaseByTCID(tcid);
-        HttpResponse preValidationResponse = testContext.getData("preValidationResponse", HttpResponse.class)
-                .orElseThrow(() -> new IllegalStateException("Pre-validation response not found in context"));
-        HttpResponse postValidationResponse = prepareAndSendRequest(validationTestCase);
+    private Map<String, Map<String, String>> extractDynamicValidations(Map<String, String> expResult) {
+        Map<String, Map<String, String>> dynamicValidations = new HashMap<>();
+        expResult.forEach((key, value) -> {
+            if (isDynamicField(key)) {
+                String tcid = key.substring(0, key.indexOf('.'));
+                String field = key.substring(key.indexOf('.') + 1);
+                dynamicValidations.computeIfAbsent(tcid, k -> new HashMap<>()).put(field, value);
+            }
+        });
+        return dynamicValidations;
+    }
 
-        DynamicValidator.validate(preValidationResponse, postValidationResponse,
-                currentAPITestCase.getDynamicValidationExpectedChanges());
-        logger.info("Dynamic validation finished for TCID: {}", currentAPITestCase.getTCID());
+    private void executeValidationForTcid(String tcid, Map<String, String> expectedChanges) {
+        HttpResponse preValidationResponse = getPreValidationResponse(tcid);
+        HttpResponse postValidationResponse = prepareAndSendRequest(TestCaseManager.findTestCaseByTCID(tcid));
+        DynamicValidator.validate(preValidationResponse, postValidationResponse, expectedChanges);
+        logger.info("Dynamic validation finished by TCID: {}", tcid);
+    }
+
+    private HttpResponse getPreValidationResponse(String tcid) {
+        return testContext.getData("preValidationResponse_" + tcid, HttpResponse.class)
+                .orElseThrow(() -> new IllegalStateException("Pre-validation response not found for TCID: " + tcid));
     }
 
     private void storeResponseValue(List<String> keys) {
         keys.forEach(key -> {
-            String value = httpResponse.jsonPath().getString(key);
+            String field = key.substring(key.indexOf('.') + 1);
+            String value = httpResponse.jsonPath().getString(field);
             testContext.setData(key, value);
             logger.info("Stored response value: {} = {}", key, value);
         });
