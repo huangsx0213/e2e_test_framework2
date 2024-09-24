@@ -1,5 +1,7 @@
 package api.model;
 
+import api.util.Utils;
+
 import java.util.List;
 import java.util.Map;
 
@@ -60,7 +62,9 @@ public class APITestCase {
 
     public List<String> getExpResult() { return expResult; }
     public void setExpResult(List<String> expResult) { this.expResult = expResult; }
-
+    public Map<String, String> getExpResultAsMap() {
+        return Utils.parseKeyValuePairs(expResult);
+    }
     public List<String> getSaveFields() { return saveFields; }
     public void setSaveFields(List<String> saveFields) { this.saveFields = saveFields; }
 
