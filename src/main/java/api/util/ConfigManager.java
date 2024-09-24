@@ -1,4 +1,4 @@
-package api.config;
+package api.util;
 
 import org.yaml.snakeyaml.Yaml;
 import java.io.InputStream;

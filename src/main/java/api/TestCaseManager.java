@@ -1,7 +1,7 @@
-package api.util;
+package api;
 
-import api.config.ExcelDataReader;
 import api.model.APITestCase;
+import api.util.ExcelDataReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,17 +10,16 @@ import java.util.stream.Collectors;
 
 public class TestCaseManager {
     private static final Logger logger = LoggerFactory.getLogger(TestCaseManager.class);
-    private List<APITestCase> apiTestCases;
+    private final List<APITestCase> apiTestCases;
 
     public TestCaseManager() {
-        loadTestCases();
+        this.apiTestCases = loadTestCases();
     }
 
-    private void loadTestCases() {
-        if (apiTestCases == null) {
-            apiTestCases = ExcelDataReader.readTestData("API");
-            logger.info("Loaded {} test cases from Excel", apiTestCases.size());
-        }
+    private List<APITestCase> loadTestCases() {
+        List<APITestCase> testCases = ExcelDataReader.readTestData("API");
+        logger.info("Loaded {} test cases from Excel", testCases.size());
+        return testCases;
     }
 
     public APITestCase findTestCaseByTCID(String tcid) {
@@ -33,14 +32,14 @@ public class TestCaseManager {
                 });
     }
 
-    public Set<String> extractPreValidationTcids(String currentTCID, Map<String, String> expResult) {
+    public Set<String> extractPreValidationTCIDs(String currentTCID, Map<String, String> expResult) {
         return expResult.keySet().stream()
                 .filter(key -> key.contains(".") && !key.startsWith(currentTCID))
                 .map(key -> key.substring(0, key.indexOf('.')))
                 .collect(Collectors.toSet());
     }
 
-    public Map<String, Map<String, String>> extractDynamicValidations(String currentTCID,Map<String, String> expResult) {
+    public Map<String, Map<String, String>> extractDynamicValidations(Map<String, String> expResult, String currentTCID) {
         Map<String, Map<String, String>> dynamicValidations = new HashMap<>();
         expResult.forEach((key, value) -> {
             if (isDynamicField(key,currentTCID)) {

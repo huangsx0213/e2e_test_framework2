@@ -1,7 +1,6 @@
-package api.template;
+package api;
 
-import api.config.ConfigManager;
-import api.exception.TestException;
+import api.util.ConfigManager;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;

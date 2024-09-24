@@ -1,30 +1,33 @@
-package api.util;
+package api;
 
-import api.config.ConfigManager;
 import api.model.APITestCase;
 import api.model.HttpResponse;
-import api.request.HttpRequestBuilder;
+import api.util.ConfigManager;
+import api.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RequestExecutor {
-    private static final Logger logger = LoggerFactory.getLogger(RequestExecutor.class);
+public class HttpRequestExecutor {
+    private static final Logger logger = LoggerFactory.getLogger(HttpRequestExecutor.class);
     private final ConfigManager configManager;
 
-    public RequestExecutor(ConfigManager configManager) {
+    public HttpRequestExecutor(ConfigManager configManager) {
         this.configManager = configManager;
     }
 
     public HttpResponse prepareAndSendRequest(APITestCase testCase) {
-        HttpRequestBuilder requestBuilder = new HttpRequestBuilder(configManager)
+        HttpRequestBuilder requestBuilder = createRequestBuilder(testCase);
+        HttpResponse response = new HttpResponse(requestBuilder.setRelaxedHTTPSValidation().execute());
+        response.logResponse();
+        return response;
+    }
+
+    private HttpRequestBuilder createRequestBuilder(APITestCase testCase) {
+        return new HttpRequestBuilder(configManager)
                 .setEndpoint(testCase.getEndpointKey())
                 .setHeadersTemplate(testCase.getHeadersTemplateKey())
                 .setHeaderOverride(Utils.parseKeyValuePairs(testCase.getHeaderOverride()))
                 .setBodyTemplate(testCase.getBodyTemplateKey())
                 .setBodyOverride(Utils.parseKeyValuePairs(testCase.getBodyOverride()));
-
-        HttpResponse response = new HttpResponse(requestBuilder.setRelaxedHTTPSValidation().execute());
-        response.logResponse();
-        return response;
     }
 }

@@ -1,8 +1,7 @@
-package api.validation;
+package api;
 
 import api.model.HttpResponse;
-import api.config.ConfigManager;
-import api.exception.TestException;
+import api.util.ConfigManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Map;

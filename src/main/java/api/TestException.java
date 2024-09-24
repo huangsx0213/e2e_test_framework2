@@ -1,4 +1,4 @@
-package api.exception;
+package api;
 
 public class TestException extends RuntimeException {
     public TestException(String message) {

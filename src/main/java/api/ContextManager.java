@@ -1,10 +1,9 @@
-package api.util;
+package api;
 
-import api.context.TestContext;
+import api.model.TestContext;
 import api.model.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.List;
 
 public class ContextManager {

@@ -1,8 +1,6 @@
-package api.request;
+package api;
 
-import api.config.ConfigManager;
-import api.template.TemplateProcessor;
-import api.exception.TestException;
+import api.util.ConfigManager;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.response.Response;
