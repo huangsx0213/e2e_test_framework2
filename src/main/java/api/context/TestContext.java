@@ -48,36 +48,4 @@ public class TestContext {
             logger.warn("Attempted to remove non-existent context data: {}", key);
         }
     }
-
-    public boolean containsKey(String key) {
-        boolean contains = contextData.containsKey(key);
-        logger.debug("Context contains key {}: {}", key, contains);
-        return contains;
-    }
-
-    public Map<String, Object> getAllData() {
-        return new ConcurrentHashMap<>(contextData);
-    }
-
-    public void mergeContext(Map<String, Object> newData) {
-        contextData.putAll(newData);
-        logger.debug("Merged {} new items into context", newData.size());
-    }
-
-    public void setIfAbsent(String key, Object value) {
-        Object oldValue = contextData.putIfAbsent(key, value);
-        if (oldValue == null) {
-            logger.debug("Set context data (if absent): {} = {}", key, value);
-        } else {
-            logger.debug("Context data already exists: {} = {}", key, oldValue);
-        }
-    }
-
-    public <T> T getOrDefault(String key, T defaultValue) {
-        Object value = contextData.getOrDefault(key, defaultValue);
-        logger.debug("Get context data (or default): {} = {}", key, value);
-        @SuppressWarnings("unchecked")
-        T result = (T) value;
-        return result;
-    }
 }

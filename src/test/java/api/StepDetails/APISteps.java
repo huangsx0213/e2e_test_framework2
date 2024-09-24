@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class APISteps {
     private static final Logger logger = LoggerFactory.getLogger(APISteps.class);
@@ -45,14 +44,15 @@ public class APISteps {
 
     @Step("Execute API request")
     public void executeAPIRequest() {
-        executeDynamicValidationPreRequests();
+        executePreRequestValidation();
         executeMainRequest();
     }
 
     @Step("Verify API response")
     public void verifyAPIResponse() {
-        verifyApiResponse();
-        performDynamicValidation();
+        verifyResponseStatusCode();
+        verifyResponseContent();
+        executeDynamicValidation();
     }
 
     @Step("Store response values")
@@ -62,26 +62,20 @@ public class APISteps {
                 .ifPresent(this::storeResponseValue);
     }
 
-    private void executeDynamicValidationPreRequests() {
+    private void executePreRequestValidation() {
         Optional.ofNullable(currentAPITestCase.getDynamicValidationTCID())
                 .filter(tcid -> !tcid.isEmpty())
                 .ifPresent(this::executeValidationRequest);
     }
-
     private void executeValidationRequest(String tcid) {
         logger.info("Executing dynamic validation request for TCID: {}", tcid);
         APITestCase validationTestCase = TestCaseManager.findTestCaseByTCID(tcid);
-        HttpResponse response = executeTestCase(validationTestCase);
+        HttpResponse response = prepareAndSendRequest(validationTestCase);
         testContext.setData("preValidationResponse", response);
     }
-
     private void executeMainRequest() {
         logger.info("Executing main API request for TCID: {}", currentAPITestCase.getTCID());
-        httpResponse = executeTestCase(currentAPITestCase);
-    }
-
-    private HttpResponse executeTestCase(APITestCase testCase) {
-        return prepareAndSendRequest(testCase);
+        httpResponse = prepareAndSendRequest(currentAPITestCase);
     }
 
     private HttpResponse prepareAndSendRequest(APITestCase testCase) {
@@ -104,19 +98,16 @@ public class APISteps {
         return response;
     }
 
-    private void verifyApiResponse() {
-        verifyResponseStatusCode(currentAPITestCase.getExpStatus());
-        verifyResponseContent(Utils.parseKeyValuePairs(currentAPITestCase.getExpResult()));
-    }
-
-    private void verifyResponseStatusCode(int expectedStatusCode) {
+    private void verifyResponseStatusCode() {
+        int expectedStatusCode = currentAPITestCase.getExpStatus();
         int actualStatusCode = httpResponse.getStatusCode();
         assert actualStatusCode == expectedStatusCode :
                 String.format("Expected status code %d but got %d", expectedStatusCode, actualStatusCode);
         logger.info("Verified response status code: {}", actualStatusCode);
     }
 
-    private void verifyResponseContent(Map<String, String> expectedData) {
+    private void verifyResponseContent() {
+        Map<String, String> expectedData = Utils.parseKeyValuePairs(currentAPITestCase.getExpResult());
         expectedData.forEach((key, expectedValue) -> {
             String actualValue = httpResponse.jsonPath().getString(key);
             assert actualValue != null && actualValue.equals(expectedValue) :
@@ -125,17 +116,17 @@ public class APISteps {
         });
     }
 
-    private void performDynamicValidation() {
+    private void executeDynamicValidation() {
         Optional.ofNullable(currentAPITestCase.getDynamicValidationTCID())
                 .filter(tcid -> !tcid.isEmpty())
-                .ifPresent(this::executeDynamicValidation);
+                .ifPresent(this::performDynamicValidation);
     }
 
-    private void executeDynamicValidation(String tcid) {
+    private void performDynamicValidation(String tcid) {
         APITestCase validationTestCase = TestCaseManager.findTestCaseByTCID(tcid);
         HttpResponse preValidationResponse = testContext.getData("preValidationResponse", HttpResponse.class)
                 .orElseThrow(() -> new IllegalStateException("Pre-validation response not found in context"));
-        HttpResponse postValidationResponse = executeTestCase(validationTestCase);
+        HttpResponse postValidationResponse = prepareAndSendRequest(validationTestCase);
 
         DynamicValidator.validate(preValidationResponse, postValidationResponse,
                 currentAPITestCase.getDynamicValidationExpectedChanges());

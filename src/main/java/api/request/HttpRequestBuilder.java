@@ -135,15 +135,6 @@ public class HttpRequestBuilder {
         return response;
     }
 
-
-    public Method getMethod() {
-        return method;
-    }
-
-    public String getEndpoint() {
-        return endpoint;
-    }
-
     private void logRequest() {
         logger.info("Request details:");
         logger.info("URL: {}", endpoint);

@@ -31,10 +31,18 @@ public class TemplateProcessor {
         // Private constructor to prevent instantiation
     }
 
+    /**
+     * Renders a template with the given name and data.
+     *
+     * @param templateName The name of the template to render
+     * @param data A map containing the data to be used in the template
+     * @return The rendered template as a string
+     * @throws TestException if template rendering fails
+     */
     public static String renderTemplate(String templateName, Map<String, String> data) throws TestException {
         if (templateName == null || templateName.trim().isEmpty()) {
             logger.warn("Template name is null or empty, returning empty string");
-            return ""; // 返回空字符串
+            return ""; // Return an empty string
         }
 
         try (StringWriter writer = new StringWriter()) {
@@ -49,6 +57,12 @@ public class TemplateProcessor {
         }
     }
 
+    /**
+     * Parses a string containing headers into a map.
+     *
+     * @param headerString A string containing headers, with each header on a new line
+     * @return A map of header names to header values
+     */
     public static Map<String, String> parseHeaderString(String headerString) {
         Map<String, String> headers = new HashMap<>();
         String[] lines = headerString.split("\n");
@@ -65,23 +79,6 @@ public class TemplateProcessor {
         logger.debug("Parsed {} headers", headers.size());
         return headers;
     }
-
-    public static void setTemplateDirectory(String directory) {
-        try {
-            configuration.setDirectoryForTemplateLoading(new java.io.File(directory));
-            logger.info("Template directory set to: {}", directory);
-        } catch (IOException e) {
-            logger.error("Failed to set template directory: {}", directory, e);
-            throw new TestException("Failed to set template directory", e);
-        }
-    }
-
-    public static String combineTemplates(String... templateNames) throws TestException {
-        StringBuilder combined = new StringBuilder();
-        for (String templateName : templateNames) {
-            combined.append(renderTemplate(templateName, new HashMap<>())).append("\n");
-        }
-        logger.debug("Combined {} templates", templateNames.length);
-        return combined.toString().trim();
-    }
 }
+
+
