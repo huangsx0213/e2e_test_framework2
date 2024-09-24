@@ -6,13 +6,9 @@ import java.util.Map;
 
 public class ConfigManager {
 
-    private static final String API_ENDPOINT_CONFIG_FILE = "/config/api-endpoint-config.yaml";
-    private static final String PROJECT_TEMPLATE_CONFIG_FILE = "/config/project-template-config.yaml";
-
     private static volatile ConfigManager instance;
 
     private Map<String, Object> apiEndpointConfig;
-    private Map<String, Object> projectTemplateConfig;
     private String currentEnvironment;
     private String currentProject;
 

@@ -4,11 +4,8 @@ import api.model.APITestCase;
 import api.model.HttpResponse;
 import api.util.ConfigManager;
 import api.util.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class HttpRequestExecutor {
-    private static final Logger logger = LoggerFactory.getLogger(HttpRequestExecutor.class);
     private final ConfigManager configManager;
 
     public HttpRequestExecutor(ConfigManager configManager) {

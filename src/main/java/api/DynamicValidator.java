@@ -8,7 +8,6 @@ import java.util.Map;
 
 public class DynamicValidator {
     private static final Logger logger = LoggerFactory.getLogger(DynamicValidator.class);
-    private static final ConfigManager configManager = ConfigManager.getInstance();
 
     public static void validate(HttpResponse beforeResponse, HttpResponse afterResponse, Map<String, String> expectedChanges) {
         logger.info("Starting dynamic validation");
