@@ -44,7 +44,7 @@ public class APISteps {
 
     @Step("Execute API request")
     public void executeAPIRequest() {
-        executePreRequestValidation();
+        executePreValidationRequest();
         executeMainRequest();
     }
 
@@ -62,7 +62,7 @@ public class APISteps {
                 .ifPresent(this::storeResponseValue);
     }
 
-    private void executePreRequestValidation() {
+    private void executePreValidationRequest() {
         Optional.ofNullable(currentAPITestCase.getDynamicValidationTCID())
                 .filter(tcid -> !tcid.isEmpty())
                 .ifPresent(this::executeValidationRequest);
