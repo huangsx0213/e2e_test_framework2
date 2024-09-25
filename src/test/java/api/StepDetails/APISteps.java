@@ -7,8 +7,8 @@ import api.model.HttpResponse;
 import net.serenitybdd.annotations.Step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Set;
-import java.util.Map;
+
+import java.util.*;
 
 public class APISteps {
     private static final Logger logger = LoggerFactory.getLogger(APISteps.class);
@@ -20,12 +20,16 @@ public class APISteps {
     private TestCaseManager testCaseManager;
     private HttpResponse httpResponse;
     private String currentTCID;
+    private Set<String> executedSetupCases;
+    private static List<String> pendingTeardownCases = new ArrayList<>();
+
 
     public APISteps() {
         this.configManager = ConfigManager.getInstance();
         this.httpRequestExecutor = new HttpRequestExecutor(configManager);
         this.standardValidator = new StandardValidator();
         this.contextManager = new ContextManager();
+        this.executedSetupCases = new HashSet<>();
     }
 
     @Step("Set the environment to {0}")
@@ -38,17 +42,57 @@ public class APISteps {
     public void setProject(String project) {
         configManager.setProject(project);
         logger.info("Project set to: {}", project);
-        this.testCaseManager = new TestCaseManager();
-    }
+           }
 
     @Step("Load test case for {0}")
     public void loadTestCase(String tcid) {
+        this.testCaseManager = new TestCaseManager();
         this.currentTCID = tcid;
         logger.info("Loaded test case for TCID: {}", tcid);
+
+        APITestCase testCase = getTestCase();
+        executeSetupTestCases(testCase);
+        registerTeardownTestCases(testCase);
     }
 
     private APITestCase getTestCase() {
         return testCaseManager.findTestCaseByTCID(currentTCID);
+    }
+
+    private void executeSetupTestCases(APITestCase testCase) {
+        List<String> setupCases = extractCases(testCase.getConditions(), "[TestSetup]");
+        for (String setupTcid : setupCases) {
+            if (!executedSetupCases.contains(setupTcid)) {
+                logger.info("Executing setup test case: {}", setupTcid);
+                executeTestCase(setupTcid);
+                executedSetupCases.add(setupTcid);
+            }
+        }
+    }
+
+    private void registerTeardownTestCases(APITestCase testCase) {
+        List<String> teardownCases = extractCases(testCase.getConditions(), "[TestTeardown]");
+        synchronized (pendingTeardownCases) {
+            pendingTeardownCases.addAll(teardownCases);
+        }
+    }
+
+    private List<String> extractCases(List<String> conditions, String prefix) {
+        List<String> cases = new ArrayList<>();
+        for (String condition : conditions) {
+            if (condition.startsWith(prefix)) {
+                cases.addAll(Arrays.asList(condition.substring(prefix.length()).split(",")));
+            }
+        }
+        return cases;
+    }
+
+    private void executeTestCase(String tcid) {
+        APITestCase testCase = testCaseManager.findTestCaseByTCID(tcid);
+        HttpResponse response = httpRequestExecutor.prepareAndSendRequest(testCase);
+        verifyResponseStatus(testCase, response);
+        verifyResponseContent(testCase, response);
+        storeResponseValues(testCase, response);
     }
 
     @Step("Execute API request")
@@ -78,17 +122,17 @@ public class APISteps {
     @Step("Verify API response")
     public void verifyAPIResponse() {
         APITestCase testCase = getTestCase();
-        verifyResponseStatus(testCase);
-        verifyResponseContent(testCase);
+        verifyResponseStatus(testCase, httpResponse);
+        verifyResponseContent(testCase, httpResponse);
         executeDynamicValidation(testCase);
     }
 
-    private void verifyResponseStatus(APITestCase testCase) {
-        standardValidator.verifyResponseStatusCode(httpResponse, testCase.getExpStatus());
+    private void verifyResponseStatus(APITestCase testCase, HttpResponse response) {
+        standardValidator.verifyResponseStatusCode(response, testCase.getExpStatus());
     }
 
-    private void verifyResponseContent(APITestCase testCase) {
-        standardValidator.verifyResponseContent(httpResponse, testCase.getExpResultAsMap(), currentTCID);
+    private void verifyResponseContent(APITestCase testCase, HttpResponse response) {
+        standardValidator.verifyResponseContent(response, testCase.getExpResultAsMap(), testCase.getTCID());
     }
 
     private void executeDynamicValidation(APITestCase testCase) {
@@ -107,6 +151,29 @@ public class APISteps {
     @Step("Store response values")
     public void storeResponseValues() {
         APITestCase testCase = getTestCase();
-        contextManager.storeResponseValues(httpResponse, testCase.getSaveFields());
+        storeResponseValues(testCase, httpResponse);
+    }
+
+    private void storeResponseValues(APITestCase testCase, HttpResponse response) {
+        contextManager.storeResponseValues(response, testCase.getSaveFields());
+    }
+
+    public void executeTeardownTestCases() {
+        List<String> casesToExecute;
+        synchronized (pendingTeardownCases) {
+            casesToExecute = new ArrayList<>(pendingTeardownCases);
+            pendingTeardownCases.clear();
+        }
+        for (String teardownTcid : casesToExecute) {
+            loadTestCase(teardownTcid);
+            logger.info("Executing teardown test case: {}", teardownTcid);
+            executeTestCase(teardownTcid);
+        }
+    }
+
+    public static boolean hasPendingTeardownCases() {
+        synchronized (pendingTeardownCases) {
+            return !pendingTeardownCases.isEmpty();
+        }
     }
 }

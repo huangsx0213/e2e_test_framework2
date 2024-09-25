@@ -18,6 +18,9 @@ public class ContextManager {
         if (keys != null) {
             keys.forEach(key -> {
                 String field = key.substring(key.indexOf('.') + 1);
+                if (!response.hasJsonPath(field)) {
+                    throw new IllegalArgumentException("Invalid JSON path: " + field);
+                }
                 String value = response.jsonPath().getString(field);
                 testContext.setData(key, value);
                 logger.info("Stored response value: {} = {}", key, value);
