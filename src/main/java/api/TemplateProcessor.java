@@ -1,6 +1,8 @@
 package api;
 
+import api.model.TestContext;
 import api.util.ConfigManager;
+import api.util.DynamicDataGenerator;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -31,10 +33,10 @@ public class TemplateProcessor {
     }
 
     /**
-     * Renders a template with the given name and data.
+     * Renders a template with the given name and data, using saved fields from TestContext.
      *
      * @param templateName The name of the template to render
-     * @param data A map containing the data to be used in the template
+     * @param data         A map containing the data to be used in the template
      * @return The rendered template as a string
      * @throws TestException if template rendering fails
      */
@@ -46,7 +48,18 @@ public class TemplateProcessor {
 
         try (StringWriter writer = new StringWriter()) {
             Template template = configuration.getTemplate(templateName);
-            template.process(data, writer);
+            Map<String, Object> dynamicData = new HashMap<>();
+
+            // Get saved fields from TestContext
+            Map<String, String> savedFields = TestContext.getInstance().getAllDataAsString();
+
+            // Generate dynamic data for each entry in the data map
+            for (Map.Entry<String, String> entry : data.entrySet()) {
+                dynamicData.put(entry.getKey(), DynamicDataGenerator.generateDynamicData(entry.getValue(), savedFields));
+                logger.debug("Generated dynamic data for '{}': {}", entry.getKey(), dynamicData.get(entry.getKey()));
+            }
+
+            template.process(dynamicData, writer);
             String renderedContent = writer.toString();
             logger.debug("Template '{}' rendered successfully", templateName);
             return renderedContent;
@@ -79,5 +92,3 @@ public class TemplateProcessor {
         return headers;
     }
 }
-
-

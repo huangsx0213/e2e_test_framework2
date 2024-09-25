@@ -2,7 +2,7 @@ package api.model;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Optional;
@@ -35,17 +35,15 @@ public class TestContext {
         return Optional.empty();
     }
 
-    public void clearContext() {
-        contextData.clear();
-        logger.debug("Cleared test context");
+    public Map<String, Object> getAllData() {
+        return new HashMap<>(contextData);
     }
 
-    public void removeData(String key) {
-        Object removedValue = contextData.remove(key);
-        if (removedValue != null) {
-            logger.debug("Removed context data: {} = {}", key, removedValue);
-        } else {
-            logger.warn("Attempted to remove non-existent context data: {}", key);
+    public Map<String, String> getAllDataAsString() {
+        Map<String, String> result = new HashMap<>();
+        for (Map.Entry<String, Object> entry : contextData.entrySet()) {
+            result.put(entry.getKey(), String.valueOf(entry.getValue()));
         }
+        return result;
     }
 }
