@@ -91,4 +91,17 @@ public class TemplateProcessor {
         logger.debug("Parsed {} headers", headers.size());
         return headers;
     }
+
+    public static String templateType(String templateName) {
+        if (templateName == null || templateName.trim().isEmpty()) {
+            return null; // 返回 null 表示没有特定的 Content-Type
+        }
+        if (templateName.contains("xml")) {
+            return "xml";
+        } else if (templateName.contains("json")) {
+            return "json";
+        } else {
+            return "text/plain";
+        }
+    }
 }

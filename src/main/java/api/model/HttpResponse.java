@@ -1,10 +1,19 @@
 package api.model;
 
-import io.restassured.response.Response;
+import api.util.XmlToJsonConverter;
 import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Map;
 import java.util.Optional;
 
@@ -38,7 +47,13 @@ public class HttpResponse {
 
     public JsonPath jsonPath() {
         if (jsonPath == null) {
-            jsonPath = response.jsonPath();
+            String contentType = response.getContentType();
+            if (contentType != null && contentType.contains("application/xml")) {
+                String json = XmlToJsonConverter.convertXmlToJson(response.getBody().asString());
+                jsonPath = new JsonPath(json);
+            } else {
+                jsonPath = response.jsonPath();
+            }
         }
         return jsonPath;
     }
@@ -81,8 +96,32 @@ public class HttpResponse {
     public void logResponse() {
         logger.info("Response Status Code: {}", getStatusCode());
         logger.info("Response Headers:\n{}", getHeaders());
-        logger.info("Response Body:\n{}", getBodyAsString());
+
+        String contentType = response.getContentType();
+        if (contentType != null && contentType.contains("application/xml")) {
+            logger.info("Response Body (XML):\n{}", formatXml(getBodyAsString()));
+        } else {
+            logger.info("Response Body:\n{}", getBodyAsString());
+        }
+
         logger.info("Response Time: {} ms", getResponseTime());
+    }
+
+    private String formatXml(String xml) {
+        try {
+            Source xmlInput = new StreamSource(new StringReader(xml));
+            StringWriter stringWriter = new StringWriter();
+            StreamResult xmlOutput = new StreamResult(stringWriter);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            transformer.transform(xmlInput, xmlOutput);
+            return xmlOutput.getWriter().toString();
+        } catch (Exception e) {
+            logger.error("Failed to format XML", e);
+            return xml;
+        }
     }
 
     public Response getOriginalResponse() {
