@@ -3,6 +3,9 @@ dev:
     summary:
       method: POST
       url: https://stu-us1.westus3.cloudapp.azure.com/api/summary
+    add_item:
+      method: POST
+      url: https://stu-us1.westus3.cloudapp.azure.com/api/add_item
     get_data:
       method: POST
       url: https://stu-us1.westus3.cloudapp.azure.com/api/data
@@ -12,6 +15,9 @@ sit:
     summary:
       method: POST
       url: https://stu-us1.westus3.cloudapp.azure.com/api/summary
+    add_item:
+      method: POST
+      url: https://stu-us1.westus3.cloudapp.azure.com/api/add_item
     get_data:
       method: POST
       url: https://stu-us1.westus3.cloudapp.azure.com/api/data
