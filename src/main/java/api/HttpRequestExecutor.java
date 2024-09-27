@@ -14,7 +14,7 @@ public class HttpRequestExecutor {
 
     public HttpResponse prepareAndSendRequest(APITestCase testCase) {
         HttpRequestBuilder requestBuilder = createRequestBuilder(testCase);
-        HttpResponse response = new HttpResponse(requestBuilder.setRelaxedHTTPSValidation().execute());
+        HttpResponse response = new HttpResponse(requestBuilder.execute());
         response.logResponse();
         return response;
     }
@@ -25,6 +25,7 @@ public class HttpRequestExecutor {
                 .setHeadersTemplate(testCase.getHeadersTemplateKey())
                 .setHeaderOverride(Utils.parseKeyValuePairs(testCase.getHeaderOverride()))
                 .setBodyTemplate(testCase.getBodyTemplateKey())
-                .setBodyOverride(Utils.parseKeyValuePairs(testCase.getBodyOverride()));
+                .setBodyOverride(Utils.parseKeyValuePairs(testCase.getBodyOverride()))
+                .setRelaxedHTTPSValidation();
     }
 }

@@ -1,12 +1,12 @@
 {
   "action": "get",
   "filter": {
-    "status": "${status}",
+    "status": "",
     "minAmount": "",
     "maxAmount": ""
   },
   "sort": {
-    "field": "lastUpdate",
+    "field": "id",
     "order": "desc"
   },
   "page": 1,
