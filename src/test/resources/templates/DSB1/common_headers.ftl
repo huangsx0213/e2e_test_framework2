@@ -1,3 +1,3 @@
-Accept:application/xml
+Accept:application/json
 Content-Type: application/json
 Environment: ${env}
