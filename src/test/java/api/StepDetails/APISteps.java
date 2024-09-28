@@ -17,6 +17,7 @@ public class APISteps {
 
     private APIResponse APIResponse;
     private APITestCase currentTestCase;
+    private String currentTCID;
 
     public APISteps() {
         this.apiConfigManager = APIConfigManager.getInstance();
@@ -41,33 +42,36 @@ public class APISteps {
     public void loadTestCase(String tcid) {
         currentTestCase = APITestExecutionManager.loadTestCase(tcid);
         logger.info("Loaded test case for TCID: {}", tcid);
+        currentTCID = currentTestCase.getTCID();
 
-        logger.info("Executing setup test cases for TCID: {}", tcid);
-        APITestExecutionManager.executeSetupTestCases(currentTestCase);
-        logger.info("Setup test cases executed for TCID: {}", tcid);
-        testTeardownManager.registerTearDownTestCases(currentTestCase);
     }
 
     @Step("Execute API request")
     public void executeAPIRequest() {
-        logger.info("Executing pre-validation requests for TCID: {}", currentTestCase.getTCID());
-        APIResponseValidator.executePreValidationRequests(currentTestCase);
-        logger.info("Pre-validation requests executed for TCID: {}", currentTestCase.getTCID());
+        logger.info("Executing setup test cases for TCID: {}", currentTCID);
+        APITestExecutionManager.executeSetupTestCases(currentTestCase);
+        logger.info("Setup test cases executed for TCID: {}", currentTCID);
 
-        logger.info("Executing main request for TCID: {}", currentTestCase.getTCID());
+        testTeardownManager.registerTearDownTestCases(currentTestCase);
+
+        logger.info("Executing pre-validation requests for TCID: {}",currentTCID);
+        APIResponseValidator.executePreValidationRequests(currentTestCase);
+        logger.info("Pre-validation requests executed for TCID: {}", currentTCID);
+
+        logger.info("Executing main request for TCID: {}",currentTCID);
         APIResponse = APITestExecutionManager.executeMainRequest(currentTestCase);
-        logger.info("Main request executed for TCID: {}", currentTestCase.getTCID());
+        logger.info("Main request executed for TCID: {}",currentTCID);
     }
 
     @Step("Verify API response")
     public void verifyAPIResponse() {
-        logger.info("Verifying response for TCID: {}", currentTestCase.getTCID());
+        logger.info("Verifying response for TCID: {}", currentTCID);
         APIResponseValidator.verifyResponse(currentTestCase, APIResponse);
     }
 
     @Step("Store response values")
     public void storeResponseValues() {
-        logger.info("Storing response values for TCID: {}", currentTestCase.getTCID());
+        logger.info("Storing response values for TCID: {}", currentTCID);
         APITestExecutionManager.storeResponseValues(currentTestCase, APIResponse);
     }
 
