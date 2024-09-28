@@ -6,7 +6,7 @@ Feature: TC001 Add new item
     And I am using the "sit" environment
 
 
-  @get-data @positive
+  @AddItem @positive
   Scenario: Successfully Get Data by Filters
     Given I have test cases for "AddItem01"
     When I execute the API request

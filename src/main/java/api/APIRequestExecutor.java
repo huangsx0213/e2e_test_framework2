@@ -25,6 +25,8 @@ public class APIRequestExecutor {
                 .setHeaderOverride(Utils.parseKeyValuePairs(testCase.getHeaderOverride()))
                 .setBodyTemplate(testCase.getBodyTemplateKey())
                 .setBodyOverride(Utils.parseKeyValuePairs(testCase.getBodyOverride()))
+                .setQueryParams(Utils.parseKeyValuePairs(testCase.getQueryParams()))
+                .setPathParams(Utils.parseKeyValuePairs(testCase.getPathParams()))
                 .setRelaxedHTTPSValidation();
     }
 }

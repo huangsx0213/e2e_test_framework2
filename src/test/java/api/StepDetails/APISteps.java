@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 public class APISteps {
     private static final Logger logger = LoggerFactory.getLogger(APISteps.class);
     private final APIConfigManager apiConfigManager;
-    private final APITestExecutionManager APITestExecutionManager;
-    private final APIResponseValidator APIResponseValidator;
+    private final APITestExecutionManager apiTestExecutionManager;
+    private final APIResponseValidator apiResponseValidator;
     private final TestTearDownManager testTeardownManager;
 
     private APIResponse APIResponse;
@@ -21,8 +21,8 @@ public class APISteps {
 
     public APISteps() {
         this.apiConfigManager = APIConfigManager.getInstance();
-        this.APITestExecutionManager = new APITestExecutionManager();
-        this.APIResponseValidator = new APIResponseValidator();
+        this.apiTestExecutionManager = new APITestExecutionManager();
+        this.apiResponseValidator = new APIResponseValidator();
         this.testTeardownManager = new TestTearDownManager();
     }
 
@@ -40,7 +40,7 @@ public class APISteps {
 
     @Step("Load test case for {0}")
     public void loadTestCase(String tcid) {
-        currentTestCase = APITestExecutionManager.loadTestCase(tcid);
+        currentTestCase = apiTestExecutionManager.loadTestCase(tcid);
         logger.info("Loaded test case for TCID: {}", tcid);
         currentTCID = currentTestCase.getTCID();
 
@@ -50,19 +50,19 @@ public class APISteps {
     public void executeAPIRequest() {
         logger.info("******************************** Executing Setup Request **********************************");
         logger.info("Executing setup test cases for TCID: {}", currentTCID);
-        APITestExecutionManager.executeSetupTestCases(currentTestCase);
+        apiTestExecutionManager.executeSetupTestCases(currentTestCase);
         logger.info("Setup test cases executed for TCID: {}", currentTCID);
 
         testTeardownManager.registerTearDownTestCases(currentTestCase);
 
         logger.info("******************************** Executing Pre-validation Request *************************");
         logger.info("Executing pre-validation requests for TCID: {}",currentTCID);
-        APIResponseValidator.executePreValidationRequests(currentTestCase);
+        apiResponseValidator.executePreValidationRequests(currentTestCase);
         logger.info("Pre-validation requests executed for TCID: {}", currentTCID);
 
         logger.info("******************************** Executing Main Request ***********************************");
         logger.info("Executing main request for TCID: {}",currentTCID);
-        APIResponse = APITestExecutionManager.executeMainRequest(currentTestCase);
+        APIResponse = apiTestExecutionManager.executeMainRequest(currentTestCase);
         logger.info("Main request executed for TCID: {}",currentTCID);
     }
 
@@ -70,17 +70,18 @@ public class APISteps {
     public void verifyAPIResponse() {
         logger.info("******************************** Executing Verifying Response*******************************");
         logger.info("Verifying response for TCID: {}", currentTCID);
-        APIResponseValidator.verifyResponse(currentTestCase, APIResponse);
+        apiResponseValidator.verifyResponse(currentTestCase, APIResponse);
     }
 
     @Step("Store response values")
     public void storeResponseValues() {
         logger.info("Storing response values for TCID: {}", currentTCID);
-        APITestExecutionManager.storeResponseValues(currentTestCase, APIResponse);
+        apiTestExecutionManager.storeResponseValues(currentTestCase, APIResponse);
     }
 
     public void executeTearDownTestCases() {
-        logger.info("Executing tear down test cases");
+        logger.info("******************************** Executing Test Tear Down***********************************");
+        logger.info("Executing Tear Down test cases");
         testTeardownManager.executeTearDownTestCases();
     }
 }

@@ -8,26 +8,26 @@ import java.util.Map;
 import java.util.Set;
 
 public class APIResponseValidator {
-    private final APITestCaseManager APITestCaseManager;
+    private final APITestCaseManager apiTestCaseManager;
     private final StandardResponseValidator standardResponseValidator;
     private final TestContextManager testContextManager;
-    private final APIRequestExecutor APIRequestExecutor;
+    private final APIRequestExecutor apiRequestExecutor;
 
     public APIResponseValidator() {
-        this.APITestCaseManager = new APITestCaseManager();
+        this.apiTestCaseManager = new APITestCaseManager();
         this.standardResponseValidator = new StandardResponseValidator();
         this.testContextManager = new TestContextManager();
-        this.APIRequestExecutor = new APIRequestExecutor(APIConfigManager.getInstance());
+        this.apiRequestExecutor = new APIRequestExecutor(APIConfigManager.getInstance());
     }
 
     public void executePreValidationRequests(APITestCase testCase) {
-        Set<String> preValidationTCIDs = APITestCaseManager.getValidationTCIDs(testCase.getTCID(), testCase.getExpResultAsMap());
+        Set<String> preValidationTCIDs = apiTestCaseManager.getValidationTCIDs(testCase.getTCID(), testCase.getExpResultAsMap());
         preValidationTCIDs.forEach(this::executeValidationRequest);
     }
 
     private void executeValidationRequest(String tcid) {
-        APITestCase validationTestCase = APITestCaseManager.getTestCaseByTCID(tcid);
-        APIResponse response = APIRequestExecutor.prepareAndSendRequest(validationTestCase);
+        APITestCase validationTestCase = apiTestCaseManager.getTestCaseByTCID(tcid);
+        APIResponse response = apiRequestExecutor.prepareAndSendRequest(validationTestCase);
         testContextManager.setPreValidationResponse(tcid, response);
     }
 
@@ -46,13 +46,13 @@ public class APIResponseValidator {
     }
 
     private void executeDynamicValidation(APITestCase testCase) {
-        Map<String, Map<String, String>> dynamicExpectedResults = APITestCaseManager.getDynamicExpectedResults(testCase.getExpResultAsMap(), testCase.getTCID());
+        Map<String, Map<String, String>> dynamicExpectedResults = apiTestCaseManager.getDynamicExpectedResults(testCase.getExpResultAsMap(), testCase.getTCID());
         dynamicExpectedResults.forEach(this::executeDynamicValidationByTCID);
     }
 
     private void executeDynamicValidationByTCID(String tcid, Map<String, String> expectedChanges) {
         APIResponse preValidationResponse = testContextManager.getPreValidationResponse(tcid);
-        APIResponse postValidationResponse = APIRequestExecutor.prepareAndSendRequest(APITestCaseManager.getTestCaseByTCID(tcid));
+        APIResponse postValidationResponse = apiRequestExecutor.prepareAndSendRequest(apiTestCaseManager.getTestCaseByTCID(tcid));
         DynamicResponseValidator.validate(preValidationResponse, postValidationResponse, expectedChanges);
     }
 }

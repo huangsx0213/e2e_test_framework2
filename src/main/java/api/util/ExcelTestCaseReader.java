@@ -88,7 +88,8 @@ public class ExcelTestCaseReader {
         setTestCaseField(APITestCase, "SaveFields", parseList(getCellValueAsString(row, headerMap.get("Save Fields"))));
         setTestCaseField(APITestCase, "DynamicValidationTCID", getCellValueAsString(row, headerMap.get("Dynamic Validation TCID")));
         setTestCaseField(APITestCase, "DynamicValidationExpectedChanges", parseMap(getCellValueAsString(row, headerMap.get("Dynamic Validation Expected Changes"))));
-
+        setTestCaseField(APITestCase, "QueryParams", parseList(getCellValueAsString(row, headerMap.get("Query Params"))));
+        setTestCaseField(APITestCase, "PathParams", parseList(getCellValueAsString(row, headerMap.get("Path Params"))));
         return APITestCase;
     }
 

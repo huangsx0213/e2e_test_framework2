@@ -22,6 +22,8 @@ public class APITestCase {
     private List<String> saveFields;
     private String dynamicValidationTCID;
     private Map<String, String> dynamicValidationExpectedChanges;
+    private List<String> queryParams;
+    private List<String> pathParams;
 
     // Getters and setters
     public String getTCID() { return tcid; }
@@ -74,6 +76,11 @@ public class APITestCase {
     public Map<String, String> getDynamicValidationExpectedChanges() { return dynamicValidationExpectedChanges; }
     public void setDynamicValidationExpectedChanges(Map<String, String> dynamicValidationExpectedChanges) { this.dynamicValidationExpectedChanges = dynamicValidationExpectedChanges; }
 
+    public List<String> getQueryParams() { return queryParams; }
+    public void setQueryParams(List<String> queryParams) { this.queryParams = queryParams; }
+
+    public List<String> getPathParams() { return pathParams; }
+    public void setPathParams(List<String> pathParams) { this.pathParams = pathParams; }
     // Validation method
     public boolean isValid() {
         return tcid != null && !tcid.isEmpty() &&

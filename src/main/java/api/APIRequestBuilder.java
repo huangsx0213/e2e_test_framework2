@@ -1,5 +1,7 @@
 package api;
 
+import api.model.TestContext;
+import api.util.TestDataGenerator;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.response.Response;
@@ -17,8 +19,8 @@ public class APIRequestBuilder {
     private RequestSpecification request;
     private Method method;
     private String endpoint;
-    private Map<String, Object> queryParams;
-    private Map<String, Object> pathParams;
+    private Map<String, String> queryParams;
+    private Map<String, String> pathParams;
     private String bodyTemplateKey;
     private String headersTemplateKey;
     private Map<String, String> headers;
@@ -34,6 +36,7 @@ public class APIRequestBuilder {
         this.pathParams = new HashMap<>();
         this.bodyOverride = new HashMap<>();
         this.headerOverride = new HashMap<>();
+
     }
 
     public APIRequestBuilder setEndpoint(String endpointKey) {
@@ -71,16 +74,25 @@ public class APIRequestBuilder {
         logger.debug("Enabled relaxed HTTPS validation");
         return this;
     }
-    public APIRequestBuilder addQueryParam(String name, Object value) {
-        queryParams.put(name, value);
-        logger.debug("Added query parameter: {} = {}", name, value);
+
+    public APIRequestBuilder setQueryParams(Map<String, String> params) {
+        this.queryParams = params;
         return this;
     }
 
-    public APIRequestBuilder addPathParam(String name, Object value) {
-        pathParams.put(name, value);
-        logger.debug("Added path parameter: {} = {}", name, value);
+    public APIRequestBuilder setPathParams(Map<String, String> params) {
+        this.pathParams = params;
         return this;
+    }
+
+    private void processParams() {
+        Map<String, String> savedFields = TestContext.getInstance().getAllDataAsString();
+
+        queryParams.replaceAll((key, value) ->
+                TestDataGenerator.generateDynamicData(value, savedFields));
+
+        pathParams.replaceAll((key, value) ->
+                TestDataGenerator.generateDynamicData(value, savedFields));
     }
 
     private void buildRequestBody() {
@@ -122,6 +134,8 @@ public class APIRequestBuilder {
 
         buildRequestBody();
         buildRequestHeaders();
+        processParams(); // Process the query and path parameters before sending the request
+
         request.queryParams(queryParams);
         request.pathParams(pathParams);
 
@@ -129,7 +143,6 @@ public class APIRequestBuilder {
 
         logger.info("Executing {} request to {}", method, endpoint);
         Response response = request.request(method, endpoint);
-
         return response;
     }
 

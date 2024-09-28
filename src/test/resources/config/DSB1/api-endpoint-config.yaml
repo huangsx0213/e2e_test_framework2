@@ -6,6 +6,9 @@ dev:
     add_item:
       method: POST
       url: https://stu-us1.westus3.cloudapp.azure.com/api/add_item
+    delete_item:
+      method: DELETE
+      url: https://stu-us1.westus3.cloudapp.azure.com/delete_item/{id}
     get_data:
       method: POST
       url: https://stu-us1.westus3.cloudapp.azure.com/api/data
@@ -18,6 +21,9 @@ sit:
     add_item:
       method: POST
       url: http://127.0.0.1:8088/api/add_item
+    delete_item:
+      method: DELETE
+      url: http://127.0.0.1:8088/api/delete_item/{id}
     get_data:
       method: POST
       url: http://127.0.0.1:8088/api/data
