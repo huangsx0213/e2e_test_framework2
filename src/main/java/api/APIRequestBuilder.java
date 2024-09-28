@@ -21,6 +21,8 @@ public class APIRequestBuilder {
     private Map<String, Object> pathParams;
     private String bodyTemplateKey;
     private String headersTemplateKey;
+    private Map<String, String> headers;
+    private String body;
     private Map<String, String> bodyOverride;
     private Map<String, String> headerOverride;
     private boolean relaxedHttps = false;
@@ -84,9 +86,9 @@ public class APIRequestBuilder {
     private void buildRequestBody() {
         if (bodyTemplateKey != null) {
             try {
-                String body = APIRequestTemplateProcessor.renderTemplate(bodyTemplateKey, bodyOverride);
+                logger.debug("Building request body using template: {} and overrides {}", bodyTemplateKey, bodyOverride);
+                body = APIRequestTemplateProcessor.renderTemplate(bodyTemplateKey, bodyOverride);
                 request.body(body);
-                logger.debug("Built request body using template: {} and overrides", bodyTemplateKey);
             } catch (Exception e) {
                 logger.error("Failed to build request body", e);
                 throw new TestException.RequestPreparationException("Failed to build request body", e);
@@ -97,10 +99,10 @@ public class APIRequestBuilder {
     private void buildRequestHeaders() {
         if (headersTemplateKey != null) {
             try {
+                logger.debug("Building request headers using template: {} and overrides {}", headersTemplateKey, headerOverride);
                 String headersString = APIRequestTemplateProcessor.renderTemplate(headersTemplateKey, headerOverride);
-                Map<String, String> headers = APIRequestTemplateProcessor.parseHeaderString(headersString);
+                headers = APIRequestTemplateProcessor.parseHeaderString(headersString);
                 request.headers(headers);
-                logger.debug("Built request headers using template: {} and overrides", headersTemplateKey);
             } catch (Exception e) {
                 logger.error("Failed to build request headers", e);
                 throw new TestException.RequestPreparationException("Failed to build request headers", e);
@@ -127,7 +129,6 @@ public class APIRequestBuilder {
 
         logger.info("Executing {} request to {}", method, endpoint);
         Response response = request.request(method, endpoint);
-        logger.debug("Received response with status code: {}", response.getStatusCode());
 
         return response;
     }
@@ -136,23 +137,9 @@ public class APIRequestBuilder {
         logger.info("Request details:");
         logger.info("URL: {}", endpoint);
         logger.info("Method: {}", method);
-        logger.info("Header Override: {}", headerOverride);
-        logger.info("Body Override: {}", bodyOverride);
         logger.info("Query Parameters: {}", queryParams);
         logger.info("Path Parameters: {}", pathParams);
-
-        logTemplate(headersTemplateKey, headerOverride, "Headers");
-        logTemplate(bodyTemplateKey, bodyOverride, "Body");
-    }
-
-    private void logTemplate(String templateKey, Map<String, String> override, String type) {
-        if (templateKey != null) {
-            try {
-                String content = APIRequestTemplateProcessor.renderTemplate(templateKey, override);
-                logger.info("Request {}:\n{}", type, content);
-            } catch (Exception e) {
-                logger.error("Failed to log request {}", type, e);
-            }
-        }
+        logger.info("Headers: {}", headers);
+        logger.info("Body: {}", body);
     }
 }

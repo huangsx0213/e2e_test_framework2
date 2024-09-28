@@ -35,7 +35,7 @@ public class DynamicResponseValidator {
         float after = Float.parseFloat(afterValue.toString());
         float before = Float.parseFloat(beforeValue.toString());
         assert after == before + change : "Expected " + field + " to increase by " + change + ", but it changed from " + beforeValue + " to " + afterValue;
-        logger.debug("Field {} increased by {} as expected", field, expectedChange);
+        logger.debug("Expected field {} increased by {} as expected", field, expectedChange);
     }
 
     private static void validateDecrease(String field, Object beforeValue, Object afterValue, String expectedChange) {
@@ -43,7 +43,7 @@ public class DynamicResponseValidator {
         float after = Float.parseFloat(afterValue.toString());
         float before = Float.parseFloat(beforeValue.toString());
         assert after == before - change : "Expected " + field + " to decrease by " + change + ", but it changed from " + beforeValue + " to " + afterValue;
-        logger.debug("Field {} decreased by {} as expected", field, expectedChange);
+        logger.debug("Expected field {} decreased by {} as expected", field, expectedChange);
     }
 
     private static void validateExactMatch(String field, Object afterValue, String expectedChange) {

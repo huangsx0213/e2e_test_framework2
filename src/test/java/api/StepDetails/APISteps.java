@@ -48,16 +48,19 @@ public class APISteps {
 
     @Step("Execute API request")
     public void executeAPIRequest() {
+        logger.info("******************************** Executing Setup Request **********************************");
         logger.info("Executing setup test cases for TCID: {}", currentTCID);
         APITestExecutionManager.executeSetupTestCases(currentTestCase);
         logger.info("Setup test cases executed for TCID: {}", currentTCID);
 
         testTeardownManager.registerTearDownTestCases(currentTestCase);
 
+        logger.info("******************************** Executing Pre-validation Request *************************");
         logger.info("Executing pre-validation requests for TCID: {}",currentTCID);
         APIResponseValidator.executePreValidationRequests(currentTestCase);
         logger.info("Pre-validation requests executed for TCID: {}", currentTCID);
 
+        logger.info("******************************** Executing Main Request ***********************************");
         logger.info("Executing main request for TCID: {}",currentTCID);
         APIResponse = APITestExecutionManager.executeMainRequest(currentTestCase);
         logger.info("Main request executed for TCID: {}",currentTCID);
@@ -65,6 +68,7 @@ public class APISteps {
 
     @Step("Verify API response")
     public void verifyAPIResponse() {
+        logger.info("******************************** Executing Verifying Response*******************************");
         logger.info("Verifying response for TCID: {}", currentTCID);
         APIResponseValidator.verifyResponse(currentTestCase, APIResponse);
     }

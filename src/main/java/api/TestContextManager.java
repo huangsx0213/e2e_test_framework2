@@ -2,12 +2,9 @@ package api;
 
 import api.model.APIResponse;
 import api.model.TestContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.List;
 
 public class TestContextManager {
-    private static final Logger logger = LoggerFactory.getLogger(TestContextManager.class);
     private final TestContext testContext;
 
     public TestContextManager() {
@@ -23,7 +20,6 @@ public class TestContextManager {
                 }
                 String value = response.jsonPath().getString(field);
                 testContext.setData(key, value);
-                logger.info("Stored response value: {} = {}", key, value);
             });
         }
     }

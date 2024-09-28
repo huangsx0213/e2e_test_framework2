@@ -24,7 +24,6 @@ public class APIResponse {
 
     public APIResponse(Response response) {
         this.response = response;
-        logger.debug("Created APIResponse with status code: {}", response.getStatusCode());
     }
 
     public int getStatusCode() {
