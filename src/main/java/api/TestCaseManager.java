@@ -16,13 +16,13 @@ public class TestCaseManager {
         this.testCases = new ArrayList<>();
     }
 
-    public List<APITestCase> loadTestCases() {
+    public List<APITestCase> loadTestCasesFromExcel() {
         testCases = ExcelDataReader.readTestData("API");
         logger.info("Loaded {} test cases from Excel", testCases.size());
         return testCases;
     }
 
-    public APITestCase findTestCaseByTCID(String tcid) {
+    public APITestCase getTestCaseByTCID(String tcid) {
         return testCases.stream()
                 .filter(tc -> tc.getTCID().equals(tcid))
                 .findFirst()
@@ -32,14 +32,14 @@ public class TestCaseManager {
                 });
     }
 
-    public Set<String> extractPreValidationTCIDs(String currentTCID, Map<String, String> expResult) {
+    public Set<String> getValidationTCIDs(String currentTCID, Map<String, String> expResult) {
         return expResult.keySet().stream()
                 .filter(key -> isDynamicField(key, currentTCID))
                 .map(key -> key.split("\\.")[0])
                 .collect(Collectors.toSet());
     }
 
-    public Map<String, Map<String, String>> extractDynamicValidations(Map<String, String> expResult, String currentTCID) {
+    public Map<String, Map<String, String>> getDynamicExpectedResults(Map<String, String> expResult, String currentTCID) {
         return expResult.entrySet().stream()
                 .filter(entry -> isDynamicField(entry.getKey(), currentTCID))
                 .collect(Collectors.groupingBy(
@@ -55,5 +55,14 @@ public class TestCaseManager {
 
     private boolean isDynamicField(String key, String currentTCID) {
         return key.contains(".") && !key.startsWith(currentTCID);
+    }
+    public List<String> getConditionTCIDs(APITestCase testCase, String prefix) {
+        List<String> TCIDs = new ArrayList<>();
+        for (String condition : testCase.getConditions()) {
+            if (condition.startsWith(prefix)) {
+                TCIDs.addAll(Arrays.asList(condition.substring(prefix.length()).split(",")));
+            }
+        }
+        return TCIDs;
     }
 }
