@@ -1,5 +1,6 @@
 package api.util;
 
+import api.APIConfigManager;
 import api.model.APITestCase;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -11,12 +12,12 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ExcelDataReader {
-    private static final Logger logger = LoggerFactory.getLogger(ExcelDataReader.class);
+public class ExcelTestCaseReader {
+    private static final Logger logger = LoggerFactory.getLogger(ExcelTestCaseReader.class);
     private static final Map<String, List<APITestCase>> cache = new HashMap<>();
 
     public static List<APITestCase> readTestData(String sheetName) {
-        String project = ConfigManager.getInstance().getCurrentProject();
+        String project = APIConfigManager.getInstance().getCurrentProject();
         String excelFilePath = String.format("src/test/resources/cases/%s/api_test_cases.xlsx", project);
         if (cache.containsKey(sheetName)) {
             logger.info("Returning cached test cases for sheet: {}", sheetName);

@@ -1,28 +1,31 @@
 package api;
 
 import api.model.APITestCase;
-import api.util.ExcelDataReader;
+import api.util.ExcelTestCaseReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TestCaseManager {
-    private static final Logger logger = LoggerFactory.getLogger(TestCaseManager.class);
+public class APITestCaseManager {
+    private static final Logger logger = LoggerFactory.getLogger(APITestCaseManager.class);
     private List<APITestCase> testCases;
 
-    public TestCaseManager() {
+    public APITestCaseManager() {
         this.testCases = new ArrayList<>();
     }
 
     public List<APITestCase> loadTestCasesFromExcel() {
-        testCases = ExcelDataReader.readTestData("API");
+        testCases = ExcelTestCaseReader.readTestData("API");
         logger.info("Loaded {} test cases from Excel", testCases.size());
         return testCases;
     }
 
     public APITestCase getTestCaseByTCID(String tcid) {
+        if (testCases == null || testCases.isEmpty()) {
+            loadTestCasesFromExcel();
+        }
         return testCases.stream()
                 .filter(tc -> tc.getTCID().equals(tcid))
                 .findFirst()

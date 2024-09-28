@@ -1,6 +1,5 @@
 package api;
 
-import api.util.ConfigManager;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.response.Response;
@@ -12,9 +11,9 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HttpRequestBuilder {
-    private static final Logger logger = LoggerFactory.getLogger(HttpRequestBuilder.class);
-    private final ConfigManager configManager;
+public class APIRequestBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(APIRequestBuilder.class);
+    private final APIConfigManager APIConfigManager;
     private RequestSpecification request;
     private Method method;
     private String endpoint;
@@ -26,8 +25,8 @@ public class HttpRequestBuilder {
     private Map<String, String> headerOverride;
     private boolean relaxedHttps = false;
 
-    public HttpRequestBuilder(ConfigManager configManager) {
-        this.configManager = configManager;
+    public APIRequestBuilder(APIConfigManager APIConfigManager) {
+        this.APIConfigManager = APIConfigManager;
         this.request = RestAssured.given();
         this.queryParams = new HashMap<>();
         this.pathParams = new HashMap<>();
@@ -35,48 +34,48 @@ public class HttpRequestBuilder {
         this.headerOverride = new HashMap<>();
     }
 
-    public HttpRequestBuilder setEndpoint(String endpointKey) {
-        this.endpoint = configManager.getEndpointUrl(endpointKey);
-        this.method = Method.valueOf(configManager.getEndpointMethod(endpointKey).toUpperCase());
+    public APIRequestBuilder setEndpoint(String endpointKey) {
+        this.endpoint = APIConfigManager.getEndpointUrl(endpointKey);
+        this.method = Method.valueOf(APIConfigManager.getEndpointMethod(endpointKey).toUpperCase());
         logger.debug("Set endpoint: {} with method: {}", this.endpoint, this.method);
         return this;
     }
 
-    public HttpRequestBuilder setBodyTemplate(String templateKey) {
+    public APIRequestBuilder setBodyTemplate(String templateKey) {
         this.bodyTemplateKey = templateKey;
         logger.debug("Set body template key: {}", templateKey);
         return this;
     }
 
-    public HttpRequestBuilder setHeadersTemplate(String templateKey) {
+    public APIRequestBuilder setHeadersTemplate(String templateKey) {
         this.headersTemplateKey = templateKey;
         logger.debug("Set headers template key: {}", templateKey);
         return this;
     }
 
-    public HttpRequestBuilder setBodyOverride(Map<String, String> override) {
+    public APIRequestBuilder setBodyOverride(Map<String, String> override) {
         this.bodyOverride = override;
         logger.debug("Set body override: {}", override);
         return this;
     }
 
-    public HttpRequestBuilder setHeaderOverride(Map<String, String> override) {
+    public APIRequestBuilder setHeaderOverride(Map<String, String> override) {
         this.headerOverride = override;
         logger.debug("Set header override: {}", override);
         return this;
     }
-    public HttpRequestBuilder setRelaxedHTTPSValidation() {
+    public APIRequestBuilder setRelaxedHTTPSValidation() {
         this.relaxedHttps = true;
         logger.debug("Enabled relaxed HTTPS validation");
         return this;
     }
-    public HttpRequestBuilder addQueryParam(String name, Object value) {
+    public APIRequestBuilder addQueryParam(String name, Object value) {
         queryParams.put(name, value);
         logger.debug("Added query parameter: {} = {}", name, value);
         return this;
     }
 
-    public HttpRequestBuilder addPathParam(String name, Object value) {
+    public APIRequestBuilder addPathParam(String name, Object value) {
         pathParams.put(name, value);
         logger.debug("Added path parameter: {} = {}", name, value);
         return this;
@@ -85,7 +84,7 @@ public class HttpRequestBuilder {
     private void buildRequestBody() {
         if (bodyTemplateKey != null) {
             try {
-                String body = TemplateProcessor.renderTemplate(bodyTemplateKey, bodyOverride);
+                String body = APIRequestTemplateProcessor.renderTemplate(bodyTemplateKey, bodyOverride);
                 request.body(body);
                 logger.debug("Built request body using template: {} and overrides", bodyTemplateKey);
             } catch (Exception e) {
@@ -98,8 +97,8 @@ public class HttpRequestBuilder {
     private void buildRequestHeaders() {
         if (headersTemplateKey != null) {
             try {
-                String headersString = TemplateProcessor.renderTemplate(headersTemplateKey, headerOverride);
-                Map<String, String> headers = TemplateProcessor.parseHeaderString(headersString);
+                String headersString = APIRequestTemplateProcessor.renderTemplate(headersTemplateKey, headerOverride);
+                Map<String, String> headers = APIRequestTemplateProcessor.parseHeaderString(headersString);
                 request.headers(headers);
                 logger.debug("Built request headers using template: {} and overrides", headersTemplateKey);
             } catch (Exception e) {
@@ -149,7 +148,7 @@ public class HttpRequestBuilder {
     private void logTemplate(String templateKey, Map<String, String> override, String type) {
         if (templateKey != null) {
             try {
-                String content = TemplateProcessor.renderTemplate(templateKey, override);
+                String content = APIRequestTemplateProcessor.renderTemplate(templateKey, override);
                 logger.info("Request {}:\n{}", type, content);
             } catch (Exception e) {
                 logger.error("Failed to log request {}", type, e);

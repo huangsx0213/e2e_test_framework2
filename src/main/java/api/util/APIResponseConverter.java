@@ -6,7 +6,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import java.io.IOException;
 
-public class XmlToJsonConverter {
+public class APIResponseConverter {
     private static final XmlMapper xmlMapper = new XmlMapper();
     private static final ObjectMapper jsonMapper = new ObjectMapper();
 

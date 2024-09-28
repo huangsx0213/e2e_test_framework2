@@ -1,14 +1,13 @@
 package api.util;
 
 import com.github.javafaker.Faker;
-import api.model.TestContext;
 
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DynamicDataGenerator {
+public class TestDataGenerator {
     private static final Faker faker = new Faker(new Locale("en-US"));
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{([^}]+)}");
 

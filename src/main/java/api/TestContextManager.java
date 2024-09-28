@@ -1,20 +1,20 @@
 package api;
 
+import api.model.APIResponse;
 import api.model.TestContext;
-import api.model.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
 
-public class ContextManager {
-    private static final Logger logger = LoggerFactory.getLogger(ContextManager.class);
+public class TestContextManager {
+    private static final Logger logger = LoggerFactory.getLogger(TestContextManager.class);
     private final TestContext testContext;
 
-    public ContextManager() {
+    public TestContextManager() {
         this.testContext = TestContext.getInstance();
     }
 
-    public void storeResponseValues(HttpResponse response, List<String> keys) {
+    public void storeResponseValues(APIResponse response, List<String> keys) {
         if (keys != null) {
             keys.forEach(key -> {
                 String field = key.substring(key.indexOf('.') + 1);
@@ -28,12 +28,12 @@ public class ContextManager {
         }
     }
 
-    public void setPreValidationResponse(String tcid, HttpResponse response) {
+    public void setPreValidationResponse(String tcid, APIResponse response) {
         testContext.setData("preValidationResponse_" + tcid, response);
     }
 
-    public HttpResponse getPreValidationResponse(String tcid) {
-        return testContext.getData("preValidationResponse_" + tcid, HttpResponse.class)
+    public APIResponse getPreValidationResponse(String tcid) {
+        return testContext.getData("preValidationResponse_" + tcid, APIResponse.class)
                 .orElseThrow(() -> new IllegalStateException("Pre-validation response not found for TCID: " + tcid));
     }
 }

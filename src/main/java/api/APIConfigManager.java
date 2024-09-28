@@ -1,28 +1,28 @@
-package api.util;
+package api;
 
 import org.yaml.snakeyaml.Yaml;
 import java.io.InputStream;
 import java.util.Map;
 
-public class ConfigManager {
+public class APIConfigManager {
 
-    private static volatile ConfigManager instance;
+    private static volatile APIConfigManager instance;
 
     private Map<String, Object> apiEndpointConfig;
     private String currentEnvironment;
     private String currentProject;
 
     // 私有构造函数，调用loadConfigs()加载配置
-    private ConfigManager() {
+    private APIConfigManager() {
 
     }
 
     // 单例模式的获取实例方法
-    public static ConfigManager getInstance() {
+    public static APIConfigManager getInstance() {
         if (instance == null) {
-            synchronized (ConfigManager.class) {
+            synchronized (APIConfigManager.class) {
                 if (instance == null) {
-                    instance = new ConfigManager();
+                    instance = new APIConfigManager();
                 }
             }
         }

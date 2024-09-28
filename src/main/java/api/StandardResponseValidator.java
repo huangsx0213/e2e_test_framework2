@@ -1,14 +1,14 @@
 package api;
 
-import api.model.HttpResponse;
+import api.model.APIResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Map;
 
-public class StandardValidator {
-    private static final Logger logger = LoggerFactory.getLogger(StandardValidator.class);
+public class StandardResponseValidator {
+    private static final Logger logger = LoggerFactory.getLogger(StandardResponseValidator.class);
 
-    public void verifyResponseStatusCode(HttpResponse response, int expectedStatusCode) {
+    public void verifyResponseStatusCode(APIResponse response, int expectedStatusCode) {
         int actualStatusCode = response.getStatusCode();
         if (actualStatusCode != expectedStatusCode) {
             throw new AssertionError(String.format("Expected status code %d but got %d", expectedStatusCode, actualStatusCode));
@@ -16,7 +16,7 @@ public class StandardValidator {
         logger.info("Verified response status code: {}", actualStatusCode);
     }
 
-    public void verifyResponseContent(HttpResponse response, Map<String, String> expectedData, String currentTCID) {
+    public void verifyResponseContent(APIResponse response, Map<String, String> expectedData, String currentTCID) {
         expectedData.forEach((key, expectedValue) -> {
             if (!isDynamicField(key, currentTCID)) {
                 verifyField(response, key, expectedValue);
@@ -24,7 +24,7 @@ public class StandardValidator {
         });
     }
 
-    private void verifyField(HttpResponse response, String key, String expectedValue) {
+    private void verifyField(APIResponse response, String key, String expectedValue) {
         String field = key.substring(key.indexOf('.') + 1);
         String actualValue = response.jsonPath().getString(field);
         if (actualValue == null || !actualValue.equals(expectedValue)) {

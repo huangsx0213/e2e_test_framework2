@@ -1,6 +1,6 @@
 package api.model;
 
-import api.util.XmlToJsonConverter;
+import api.util.APIResponseConverter;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.slf4j.Logger;
@@ -17,14 +17,14 @@ import java.io.StringWriter;
 import java.util.Map;
 import java.util.Optional;
 
-public class HttpResponse {
-    private static final Logger logger = LoggerFactory.getLogger(HttpResponse.class);
+public class APIResponse {
+    private static final Logger logger = LoggerFactory.getLogger(APIResponse.class);
     private final Response response;
     private JsonPath jsonPath;
 
-    public HttpResponse(Response response) {
+    public APIResponse(Response response) {
         this.response = response;
-        logger.debug("Created HttpResponse with status code: {}", response.getStatusCode());
+        logger.debug("Created APIResponse with status code: {}", response.getStatusCode());
     }
 
     public int getStatusCode() {
@@ -49,7 +49,7 @@ public class HttpResponse {
         if (jsonPath == null) {
             String contentType = response.getContentType();
             if (contentType != null && contentType.contains("application/xml")) {
-                String json = XmlToJsonConverter.convertXmlToJson(response.getBody().asString());
+                String json = APIResponseConverter.convertXmlToJson(response.getBody().asString());
                 jsonPath = new JsonPath(json);
             } else {
                 jsonPath = response.jsonPath();

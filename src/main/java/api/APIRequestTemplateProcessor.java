@@ -1,8 +1,7 @@
 package api;
 
 import api.model.TestContext;
-import api.util.ConfigManager;
-import api.util.DynamicDataGenerator;
+import api.util.TestDataGenerator;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -14,8 +13,8 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TemplateProcessor {
-    private static final Logger logger = LoggerFactory.getLogger(TemplateProcessor.class);
+public class APIRequestTemplateProcessor {
+    private static final Logger logger = LoggerFactory.getLogger(APIRequestTemplateProcessor.class);
     private static final Configuration configuration;
 
     static {
@@ -24,11 +23,11 @@ public class TemplateProcessor {
     }
 
     public static void updateTemplateDirectory() {
-        String project = ConfigManager.getInstance().getCurrentProject();
-        configuration.setClassForTemplateLoading(TemplateProcessor.class, "/templates/" + project);
+        String project = APIConfigManager.getInstance().getCurrentProject();
+        configuration.setClassForTemplateLoading(APIRequestTemplateProcessor.class, "/templates/" + project);
     }
 
-    private TemplateProcessor() {
+    private APIRequestTemplateProcessor() {
         // Private constructor to prevent instantiation
     }
 
@@ -55,7 +54,7 @@ public class TemplateProcessor {
 
             // Generate dynamic data for each entry in the data map
             for (Map.Entry<String, String> entry : data.entrySet()) {
-                dynamicData.put(entry.getKey(), DynamicDataGenerator.generateDynamicData(entry.getValue(), savedFields));
+                dynamicData.put(entry.getKey(), TestDataGenerator.generateDynamicData(entry.getValue(), savedFields));
                 logger.debug("Generated dynamic data for '{}': {}", entry.getKey(), dynamicData.get(entry.getKey()));
             }
 

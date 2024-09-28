@@ -1,15 +1,14 @@
 package api;
 
-import api.model.HttpResponse;
-import api.util.ConfigManager;
+import api.model.APIResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Map;
 
-public class DynamicValidator {
-    private static final Logger logger = LoggerFactory.getLogger(DynamicValidator.class);
+public class DynamicResponseValidator {
+    private static final Logger logger = LoggerFactory.getLogger(DynamicResponseValidator.class);
 
-    public static void validate(HttpResponse beforeResponse, HttpResponse afterResponse, Map<String, String> expectedChanges) {
+    public static void validate(APIResponse beforeResponse, APIResponse afterResponse, Map<String, String> expectedChanges) {
         logger.info("Starting dynamic validation");
         for (Map.Entry<String, String> entry : expectedChanges.entrySet()) {
             String field = entry.getKey();

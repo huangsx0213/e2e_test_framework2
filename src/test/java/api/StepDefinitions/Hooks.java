@@ -21,12 +21,12 @@ public class Hooks {
 
     @After
     public void afterScenario(Scenario scenario) {
-        logger.info("Executing teardown for scenario: {}", scenario.getName());
+        logger.info("Executing tearDown for scenario: {}", scenario.getName());
         try {
-            apiSteps.executeTeardownTestCases();
-            logger.info("Teardown completed successfully");
+            apiSteps.executeTearDownTestCases();
+            logger.info("TearDown completed successfully");
         } catch (Exception e) {
-            logger.error("Error during teardown execution", e);
+            logger.error("Error during tearDown execution", e);
         }
     }
 }
