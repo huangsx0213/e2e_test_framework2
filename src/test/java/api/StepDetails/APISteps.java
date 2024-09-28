@@ -20,7 +20,7 @@ public class APISteps {
     private TestCaseManager testCaseManager;
     private HttpResponse httpResponse;
     private String currentTCID;
-    private Set<String> executedSetupCases;
+    private List<String> executedSetupCases;
     private static List<String> pendingTeardownCases = new ArrayList<>();
 
 
@@ -29,7 +29,8 @@ public class APISteps {
         this.httpRequestExecutor = new HttpRequestExecutor(configManager);
         this.standardValidator = new StandardValidator();
         this.contextManager = new ContextManager();
-        this.executedSetupCases = new HashSet<>();
+        this.executedSetupCases = new ArrayList<>();
+        this.testCaseManager = new TestCaseManager();
     }
 
     @Step("Set the environment to {0}")
@@ -42,11 +43,11 @@ public class APISteps {
     public void setProject(String project) {
         configManager.setProject(project);
         logger.info("Project set to: {}", project);
-           }
+    }
 
     @Step("Load test case for {0}")
     public void loadTestCase(String tcid) {
-        this.testCaseManager = new TestCaseManager();
+        testCaseManager.loadTestCases();
         this.currentTCID = tcid;
         logger.info("Loaded test case for TCID: {}", tcid);
 
