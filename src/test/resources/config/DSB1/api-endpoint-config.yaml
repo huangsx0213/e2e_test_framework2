@@ -14,10 +14,10 @@ sit:
   endpoints:
     summary:
       method: POST
-      url: https://stu-us1.westus3.cloudapp.azure.com/api/summary
+      url: http://127.0.0.1:8088/api/summary
     add_item:
       method: POST
-      url: https://stu-us1.westus3.cloudapp.azure.com/api/add_item
+      url: http://127.0.0.1:8088/api/add_item
     get_data:
       method: POST
-      url: https://stu-us1.westus3.cloudapp.azure.com/api/data
+      url: http://127.0.0.1:8088/api/data

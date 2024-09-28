@@ -3,7 +3,7 @@ Feature: TC001 Add new item
 
   Background:
     Given I am working on the "DSB1" project
-    And I am using the "dev" environment
+    And I am using the "sit" environment
 
 
   @get-data @positive
