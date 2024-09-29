@@ -8,7 +8,7 @@ dev:
       url: https://stu-us1.westus3.cloudapp.azure.com/api/add_item
     delete_item:
       method: DELETE
-      url: https://stu-us1.westus3.cloudapp.azure.com/delete_item/{id}
+      url: https://stu-us1.westus3.cloudapp.azure.com/api/delete_item/{id}
     get_data:
       method: POST
       url: https://stu-us1.westus3.cloudapp.azure.com/api/data
